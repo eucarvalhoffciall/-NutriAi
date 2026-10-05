@@ -10,14 +10,33 @@
   var viewDate = dateKey(new Date());
   var pendingPhoto = "";
   var mealAnalysisSequence = 0;
+  var nutriMessages = [];
+  var nutriPhotoData = "";
+  var nutriRequestPending = false;
+
+  var foodOptions = [
+    { key: "ovos", label: "Ovos" }, { key: "frango", label: "Frango" },
+    { key: "peixe", label: "Peixe" }, { key: "atum", label: "Atum" },
+    { key: "grao", label: "Grão-de-bico" }, { key: "feijao", label: "Feijão" },
+    { key: "lentilhas", label: "Lentilhas" }, { key: "arroz", label: "Arroz" },
+    { key: "batata", label: "Batata" }, { key: "aveia", label: "Aveia" },
+    { key: "iogurte", label: "Iogurte natural" }, { key: "tomate", label: "Tomate" },
+    { key: "espinafres", label: "Espinafres" }, { key: "brocolos", label: "Brócolos" },
+    { key: "cogumelos", label: "Cogumelos" }, { key: "fruta", label: "Fruta da época" },
+    { key: "tofu", label: "Tofu" }, { key: "queijo", label: "Queijo fresco" }
+  ];
 
   var recipes = [
-    { id: "sopa", name: "Sopa de legumes", icon: "🥣", text: "Uma ideia simples para aproveitar legumes da época.", ingredients: ["cenoura", "curgete", "cebola", "batata", "azeite"] },
-    { id: "aveia", name: "Taça de aveia e fruta", icon: "🍓", text: "Pequeno-almoço ou lanche com ingredientes fáceis de combinar.", ingredients: ["flocos de aveia", "leite ou bebida vegetal", "banana", "canela"] },
-    { id: "grao", name: "Salada de grão", icon: "🥗", text: "Uma refeição fria para preparar com antecedência.", ingredients: ["grão-de-bico", "tomate", "pepino", "cebola roxa", "salsa"] },
-    { id: "peixe", name: "Peixe no forno", icon: "🐟", text: "Peixe e legumes preparados numa só travessa.", ingredients: ["peixe", "batata", "brócolos", "limão", "azeite"] },
-    { id: "omelete", name: "Omelete de espinafres", icon: "🍳", text: "Uma opção rápida que podes adaptar ao que tens em casa.", ingredients: ["ovos", "espinafres", "cebola", "queijo"] },
-    { id: "iogurte", name: "Iogurte com fruta", icon: "🫐", text: "Combina iogurte, fruta e uma cobertura à tua escolha.", ingredients: ["iogurte natural", "fruta", "sementes", "frutos secos"] }
+    { id: "aveia-iogurte", name: "Taça de aveia, iogurte e fruta", type: "Pequeno-almoço", icon: "🥣", text: "Uma taça fresca que combina cereais, iogurte e fruta da época.", time: "10 min", servings: 1, calories: 345, protein: 18, carbs: 50, fat: 8, favoriteKeys: ["aveia", "iogurte", "fruta"], ingredients: ["flocos de aveia", "iogurte natural", "fruta da época", "canela"], steps: ["Coloca a aveia e o iogurte numa taça.", "Junta a fruta cortada e uma pitada de canela.", "Mistura e serve de imediato ou deixa no frio durante a noite."] },
+    { id: "omelete-espinafres", name: "Omelete de espinafres", type: "Pequeno-almoço", icon: "🍳", text: "Uma opção rápida, com folhas verdes e queijo fresco.", time: "15 min", servings: 1, calories: 290, protein: 24, carbs: 9, fat: 18, favoriteKeys: ["ovos", "espinafres", "queijo"], ingredients: ["2 ovos", "espinafres", "queijo fresco", "cebola", "azeite"], steps: ["Salteia a cebola e os espinafres numa frigideira.", "Bate os ovos e verte-os sobre os legumes.", "Junta o queijo fresco, cozinha em lume brando e dobra a omelete."] },
+    { id: "frango-arroz", name: "Frango com arroz e brócolos", type: "Almoço", icon: "🍗", text: "Prato simples com uma fonte de proteína, arroz e legumes.", time: "30 min", servings: 2, calories: 480, protein: 39, carbs: 57, fat: 10, favoriteKeys: ["frango", "arroz", "brocolos", "tomate"], ingredients: ["peito de frango", "arroz", "brócolos", "tomate", "azeite"], steps: ["Coze o arroz e os brócolos até ficarem tenros.", "Grelha o frango em tiras com um fio de azeite.", "Serve com tomate cortado e tempera a gosto."] },
+    { id: "peixe-forno", name: "Peixe no forno com batata", type: "Jantar", icon: "🐟", text: "Peixe e legumes preparados no forno, numa só travessa.", time: "35 min", servings: 2, calories: 430, protein: 34, carbs: 46, fat: 12, favoriteKeys: ["peixe", "batata", "brocolos"], ingredients: ["filetes de peixe", "batata", "brócolos", "limão", "azeite"], steps: ["Corta a batata em pedaços e leva ao forno com azeite.", "Acrescenta o peixe e os brócolos a meio da cozedura.", "Tempera com limão e confirma que o peixe está bem cozinhado."] },
+    { id: "atum-grao", name: "Salada de atum e grão", type: "Almoço", icon: "🥗", text: "Uma refeição fria, prática para preparar com antecedência.", time: "15 min", servings: 2, calories: 395, protein: 30, carbs: 43, fat: 11, favoriteKeys: ["atum", "grao", "tomate"], ingredients: ["atum ao natural", "grão-de-bico", "tomate", "pepino", "salsa"], steps: ["Escorre o atum e passa o grão por água.", "Corta o tomate e o pepino em cubos.", "Mistura tudo e tempera com salsa, limão e azeite."] },
+    { id: "lentilhas-tomate", name: "Lentilhas estufadas com tomate", type: "Jantar", icon: "🍲", text: "Um estufado reconfortante com leguminosas e vegetais.", time: "35 min", servings: 3, calories: 370, protein: 21, carbs: 58, fat: 7, favoriteKeys: ["lentilhas", "tomate", "batata"], ingredients: ["lentilhas", "tomate", "cenoura", "cebola", "batata"], steps: ["Refoga a cebola e a cenoura com um pouco de azeite.", "Junta o tomate, as lentilhas e água suficiente.", "Coze em lume brando até as lentilhas ficarem macias."] },
+    { id: "tofu-cogumelos", name: "Tofu com cogumelos e arroz", type: "Jantar", icon: "🍄", text: "Salteado de tofu e cogumelos com acompanhamento de arroz.", time: "25 min", servings: 2, calories: 415, protein: 23, carbs: 49, fat: 14, favoriteKeys: ["tofu", "cogumelos", "arroz", "brocolos"], ingredients: ["tofu", "cogumelos", "arroz", "brócolos", "molho de soja"], steps: ["Coze o arroz e prepara os brócolos a vapor.", "Doura o tofu em cubos numa frigideira.", "Junta os cogumelos e serve com os acompanhamentos."] },
+    { id: "feijao-sopa", name: "Sopa de feijão e legumes", type: "Almoço", icon: "🥣", text: "Uma sopa completa para aproveitar legumes disponíveis.", time: "35 min", servings: 4, calories: 310, protein: 16, carbs: 48, fat: 7, favoriteKeys: ["feijao", "batata", "tomate"], ingredients: ["feijão", "batata", "cenoura", "tomate", "curgete"], steps: ["Coze a batata e a cenoura em água até amaciarem.", "Junta o feijão, o tomate e a curgete.", "Coze mais alguns minutos e tempera a gosto."] },
+    { id: "fruta-queijo", name: "Fruta com queijo fresco e aveia", type: "Pequeno-almoço", icon: "🍐", text: "Uma combinação rápida para o pequeno-almoço ou lanche.", time: "5 min", servings: 1, calories: 275, protein: 17, carbs: 38, fat: 7, favoriteKeys: ["fruta", "queijo", "aveia"], ingredients: ["fruta da época", "queijo fresco", "flocos de aveia", "canela"], steps: ["Lava e corta a fruta.", "Serve com queijo fresco e flocos de aveia.", "Finaliza com canela, se gostares."] },
+    { id: "grao-espinafres", name: "Grão com espinafres e arroz", type: "Almoço", icon: "🌿", text: "Uma ideia vegetariana com leguminosas, arroz e folhas verdes.", time: "25 min", servings: 2, calories: 440, protein: 19, carbs: 70, fat: 10, favoriteKeys: ["grao", "espinafres", "arroz", "tomate"], ingredients: ["grão-de-bico", "espinafres", "arroz", "tomate", "alho"], steps: ["Coze o arroz à parte.", "Salteia o alho, o tomate e os espinafres.", "Junta o grão aquecido e serve com o arroz."] }
   ];
 
   function loadState() {
@@ -416,15 +435,86 @@
   }
 
   function renderRecipes() {
-    var recipeCards = recipes.map(function (recipe) {
-      return "<article class='recipe-card'><div class='recipe-visual' aria-hidden='true'>" + recipe.icon + "</div><h3>" + esc(recipe.name) + "</h3><p>" + esc(recipe.text) + "</p><div class='ingredient-list'>" + recipe.ingredients.map(function (ingredient) { return "<span>" + esc(ingredient) + "</span>"; }).join("") + "</div><button class='button secondary small' type='button' data-action='add-recipe' data-recipe='" + esc(recipe.id) + "'>Adicionar ingredientes</button></article>";
+    var favorites = getFavoriteFoods();
+    var orderedRecipes = recipes.slice().sort(function (a, b) {
+      return recipeMatchCount(b, favorites) - recipeMatchCount(a, favorites) || a.name.localeCompare(b.name, currentLanguage());
+    });
+    var menuRecipes = ["Pequeno-almoço", "Almoço", "Jantar"].map(function (type) {
+      return orderedRecipes.find(function (recipe) { return recipe.type === type; });
+    }).filter(Boolean);
+    var menuHtml = menuRecipes.map(function (recipe) {
+      var matched = matchingFavoriteLabels(recipe, favorites);
+      return "<div class='menu-slot'><small>" + esc(recipe.type) + "</small><strong>" + esc(recipe.name) + "</strong><span>" + whole(recipe.calories) + " kcal · " + (matched.length ? "inclui " + esc(matched.join(", ")) : "estimativa por porção") + "</span></div>";
+    }).join("");
+    var recipeCards = orderedRecipes.map(function (recipe) {
+      var matches = matchingFavoriteLabels(recipe, favorites);
+      return "<article class='recipe-card'><div class='recipe-visual' aria-hidden='true'>" + recipe.icon + "</div>" + (matches.length ? "<span class='recipe-match'>✦ Com " + esc(matches.join(" · ")) + "</span>" : "") + "<h3>" + esc(recipe.name) + "</h3><p>" + esc(recipe.text) + "</p><div class='recipe-meta'><span>◷ " + esc(recipe.time) + "</span><span>Receita para " + recipe.servings + (recipe.servings === 1 ? " dose" : " doses") + "</span></div><div class='recipe-nutrition'><div><span>Energia</span><strong>" + whole(recipe.calories) + " kcal</strong></div><div><span>Proteína</span><strong>" + whole(recipe.protein) + " g</strong></div><div><span>Hidratos</span><strong>" + whole(recipe.carbs) + " g</strong></div><div><span>Gordura</span><strong>" + whole(recipe.fat) + " g</strong></div></div><div class='ingredient-list'>" + recipe.ingredients.map(function (ingredient) { return "<span>" + esc(ingredient) + "</span>"; }).join("") + "</div><details class='recipe-preparation'><summary>Ver preparação</summary><ol class='recipe-steps'>" + recipe.steps.map(function (step) { return "<li>" + esc(step) + "</li>"; }).join("") + "</ol></details><button class='button secondary small' type='button' data-action='add-recipe' data-recipe='" + esc(recipe.id) + "'>Adicionar ingredientes à lista</button></article>";
     }).join("");
     var shoppingRows = state.shopping.length ? state.shopping.map(function (item) {
       return "<div class='shopping-item " + (item.checked ? "checked" : "") + "'><input type='checkbox' data-action='toggle-shopping' data-id='" + esc(item.id) + "' " + (item.checked ? "checked" : "") + " aria-label='Marcar " + esc(item.name) + " como comprado'><label>" + esc(item.name) + "</label><button class='icon-action' type='button' data-action='delete-shopping' data-id='" + esc(item.id) + "' aria-label='Remover da lista'>×</button></div>";
     }).join("") : "<div class='empty-state'>A tua lista está vazia.<br>Adiciona ingredientes das ideias de receitas.</div>";
-    return pageHeading("Organização", "Receitas e lista de compras.", "Ideias simples e ingredientes para organizares a tua semana.", "") +
-      "<div class='recipe-columns'><section><div class='card' style='margin-bottom:15px'>" + cardHeader("Ideias para a tua mesa", "Sugestões gerais. Adapta ingredientes às tuas preferências.", "") + "<div class='recipe-grid'>" + recipeCards + "</div></div><p class='help-copy'>As receitas são ideias de preparação e não incluem valores nutricionais calculados nesta versão.</p></section>" +
+    var preferenceCopy = favorites.length ? "As sugestões estão ordenadas a partir dos " + favorites.length + " alimentos que escolheste." : "Escolhe os alimentos de que gostas no teu perfil para personalizar as sugestões.";
+    return pageHeading("Gastronomia", "Receitas à tua medida.", "Ideias de refeições, preparação e lista de compras num só lugar.", "<div class='heading-actions'><button class='button secondary' type='button' data-action='edit-food-preferences'>Escolher alimentos</button><button class='button' type='button' data-action='open-nutri'>Perguntar ao Nutri AI</button></div>") +
+      "<section class='gastronomy-banner'><div><div class='eyebrow'>O teu menu de hoje</div><h2>Comer bem, ao teu gosto.</h2><p>Uma sugestão para cada momento do dia, com os alimentos que selecionaste no perfil. Ajusta as quantidades ao teu apetite.</p></div><div class='gastronomy-count'><strong>" + (favorites.length ? favorites.length : "—") + "</strong><span>preferências ativas</span></div></section>" +
+      "<div class='recipe-columns'><section><div class='card' style='margin-bottom:15px'>" + cardHeader("Menu sugerido", "Pequeno-almoço, almoço e jantar · " + preferenceCopy, "") + "<div class='menu-day-grid'>" + menuHtml + "</div><p class='recipe-filter-note'>" + esc(favorites.length ? "As sugestões dão prioridade aos teus alimentos preferidos sempre que há uma receita correspondente. Podes pedir ao Nutri AI mais ideias com toda a tua selecção." : preferenceCopy) + "</p></div><div class='card' style='margin-bottom:15px'>" + cardHeader("Receitas e ideias", "Valores nutricionais estimados por porção · toca em «Ver preparação» para consultar os passos.", "") + "<div class='recipe-grid'>" + recipeCards + "</div></div><p class='help-copy'>Os valores são estimativas indicativas e podem variar consoante a marca, os ingredientes e as quantidades. Adapta as receitas às tuas necessidades e pede orientação profissional se precisares de um plano individual.</p></section>" +
       "<section class='card'>" + cardHeader("Lista de compras", "Guardada neste navegador", "<button class='text-link' type='button' data-action='clear-shopping'>Limpar</button>") + "<form class='inline-form' data-form='shopping'><label class='field' style='flex:1'>Novo ingrediente<input name='name' maxlength='80' required placeholder='Ex.: tomates'></label><button class='button' type='submit'>Adicionar</button></form><div style='height:10px'></div>" + shoppingRows + "</section></div>";
+  }
+
+  function getFavoriteFoods() {
+    return normalizeFavoriteFoods(state.profile && state.profile.favoriteFoods);
+  }
+
+  function normalizeFavoriteFoods(values) {
+    var allowed = foodOptions.map(function (food) { return food.key; });
+    var input = Array.isArray(values) ? values : [];
+    var unique = [];
+    input.forEach(function (key) {
+      key = String(key || "");
+      if (allowed.indexOf(key) >= 0 && unique.indexOf(key) < 0 && unique.length < 8) unique.push(key);
+    });
+    return unique;
+  }
+
+  function foodLabels(keys) {
+    return normalizeFavoriteFoods(keys).map(function (key) {
+      return (foodOptions.find(function (food) { return food.key === key; }) || {}).label || key;
+    });
+  }
+
+  function recipeMatchCount(recipe, favorites) {
+    if (!recipe || !Array.isArray(recipe.favoriteKeys)) return 0;
+    return recipe.favoriteKeys.filter(function (key) { return favorites.indexOf(key) >= 0; }).length;
+  }
+
+  function matchingFavoriteLabels(recipe, favorites) {
+    if (!recipe || !Array.isArray(recipe.favoriteKeys)) return [];
+    return foodLabels(recipe.favoriteKeys.filter(function (key) { return favorites.indexOf(key) >= 0; }));
+  }
+
+  function favoriteFoodChoices(selected) {
+    selected = normalizeFavoriteFoods(selected);
+    return "<fieldset class='food-picker span-2'><legend>Alimentos de que gostas mais</legend><p>Escolhe até 8. Vamos dar prioridade a estes alimentos nas receitas e menus. <span class='food-count' data-food-count>" + selected.length + "/8 selecionados</span></p><div class='food-choice-grid'>" + foodOptions.map(function (food) {
+      return "<label class='food-choice'><input type='checkbox' name='favoriteFoods' value='" + esc(food.key) + "' " + (selected.indexOf(food.key) >= 0 ? "checked" : "") + "><span>" + esc(food.label) + "</span></label>";
+    }).join("") + "</div></fieldset>";
+  }
+
+  function updateFavoriteCounter(root) {
+    if (!root) return;
+    var checked = root.querySelectorAll("input[name='favoriteFoods']:checked").length;
+    var counter = root.querySelector("[data-food-count]");
+    if (counter) counter.textContent = checked + "/8 selecionados";
+  }
+
+  function handleFavoriteChange(event) {
+    var input = event.target;
+    if (!input || input.name !== "favoriteFoods") return;
+    var root = input.closest("fieldset");
+    var checked = root ? root.querySelectorAll("input[name='favoriteFoods']:checked") : [];
+    if (input.checked && checked.length > 8) {
+      input.checked = false;
+      showToast("Podes escolher até 8 alimentos preferidos.");
+    }
+    updateFavoriteCounter(root);
   }
 
   function option(value, label, current) {
@@ -449,6 +539,7 @@
       "<label class='field'>Sexo para estimativas futuras<select name='sex'>" + sexOptions + "</select></label>" +
       "<label class='field'>Nível de atividade<select name='activityLevel'>" + activityOptions + "</select></label>" +
       "<label class='field span-2'>Objetivo pessoal<select name='goal'>" + goalOptions + "</select></label>" +
+      favoriteFoodChoices(profile.favoriteFoods) +
       "<label class='field'>Peso atual (kg)<input name='weight' type='number' min='25' max='350' step='0.1' required value='" + esc(profile.weight || "") + "'></label>" +
       "<label class='field'>Peso que pretendes acompanhar (kg)<input name='targetWeight' type='number' min='25' max='350' step='0.1' value='" + esc(profile.targetWeight || "") + "'></label>" +
       "<label class='field'>Meta diária de energia (kcal)<input name='calorieGoal' type='number' min='500' max='8000' required value='" + esc(profile.calorieGoal || "") + "'></label>" +
@@ -558,6 +649,9 @@
       var defaults = { language: "pt-PT", country: "PT", waterGoal: 2000 };
       if (form.elements[field]) form.elements[field].value = profile[field] == null ? (Object.prototype.hasOwnProperty.call(defaults, field) ? defaults[field] : field.indexOf("Goal") >= 0 && field !== "calorieGoal" ? 0 : "") : profile[field];
     });
+    var selectedFoods = getFavoriteFoods();
+    form.querySelectorAll("input[name='favoriteFoods']").forEach(function (input) { input.checked = selectedFoods.indexOf(input.value) >= 0; });
+    updateFavoriteCounter(form);
     document.getElementById("profile-title").textContent = state.profile ? "Atualiza o teu perfil." : "Vamos preparar o teu perfil.";
   }
 
@@ -608,7 +702,8 @@
       waterGoal: number(data.get("waterGoal")) || 2000,
       proteinGoal: number(data.get("proteinGoal")),
       carbsGoal: number(data.get("carbsGoal")),
-      fatGoal: number(data.get("fatGoal"))
+      fatGoal: number(data.get("fatGoal")),
+      favoriteFoods: normalizeFavoriteFoods(data.getAll("favoriteFoods"))
     };
     if (!state.weights.length || oldWeight !== state.profile.weight) {
       state.weights.push({ id: makeId(), date: dateKey(new Date()), weight: state.profile.weight });
@@ -691,6 +786,116 @@
       };
       reader.readAsDataURL(file);
     });
+  }
+
+  function renderNutriMessages(showLoading) {
+    var log = document.getElementById("nutri-chat-log");
+    if (!log) return;
+    log.innerHTML = "";
+    nutriMessages.forEach(function (message) {
+      var bubble = document.createElement("div");
+      bubble.className = "nutri-bubble " + (message.role === "user" ? "is-user" : "is-assistant");
+      bubble.textContent = message.text;
+      if (message.hasPhoto) {
+        var photoNote = document.createElement("small");
+        photoNote.textContent = "\n📷 Fotografia anexada";
+        bubble.appendChild(photoNote);
+      }
+      log.appendChild(bubble);
+    });
+    if (showLoading) {
+      var loading = document.createElement("div");
+      loading.className = "nutri-bubble is-assistant is-loading";
+      loading.textContent = currentLanguage() === "pt-BR" ? "A analisar…" : "A analisar…";
+      log.appendChild(loading);
+    }
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function openNutri() {
+    var dialog = document.getElementById("nutri-dialog");
+    if (!nutriMessages.length) {
+      nutriMessages.push({ role: "assistant", text: currentLanguage() === "pt-BR" ? "Olá! Sou o Nutri AI. Posso sugerir receitas, conversar sobre alimentos ou analisar uma fotografia. O que gostarias de saber?" : "Olá! Sou o Nutri AI. Posso sugerir receitas, conversar sobre alimentos ou analisar uma fotografia. O que gostarias de saber?" });
+    }
+    renderNutriMessages(false);
+    if (!dialog.open) dialog.showModal();
+    window.setTimeout(function () { document.getElementById("nutri-message").focus(); }, 40);
+  }
+
+  function updateNutriAttachment() {
+    var attachment = document.getElementById("nutri-attachment");
+    var preview = document.getElementById("nutri-photo-preview");
+    attachment.hidden = !nutriPhotoData;
+    if (nutriPhotoData) preview.src = nutriPhotoData;
+    else preview.removeAttribute("src");
+  }
+
+  function handleNutriPhotoChange(event) {
+    var file = event.target.files && event.target.files[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type || file.type.indexOf("image/") !== 0) return showToast("Escolhe uma fotografia de um alimento.");
+    if (file.size > 12000000) return showToast("A fotografia é demasiado grande. Escolhe uma imagem com menos de 12 MB.");
+    var button = document.getElementById("nutri-photo-button");
+    button.disabled = true;
+    compressImage(file).then(function (dataUrl) {
+      if (dataUrl.length > 600000) throw new Error("A fotografia continua demasiado grande. Tenta uma imagem mais pequena.");
+      nutriPhotoData = dataUrl;
+      updateNutriAttachment();
+    }).catch(function (error) {
+      showToast(error.message || "Não foi possível preparar a fotografia.");
+    }).finally(function () { button.disabled = nutriRequestPending; });
+  }
+
+  function nutriConversationForRequest() {
+    var messages = nutriMessages.filter(function (message) { return message.role === "user" || message.role === "assistant"; }).slice(-12).map(function (message) {
+      return { role: message.role, content: String(message.text || "").slice(0, 1000) };
+    });
+    while (messages.length && messages[0].role === "assistant") messages.shift();
+    return messages;
+  }
+
+  async function sendNutriMessage(event) {
+    event.preventDefault();
+    if (nutriRequestPending) return;
+    var input = document.getElementById("nutri-message");
+    var text = String(input.value || "").trim();
+    var image = nutriPhotoData;
+    if (!text && !image) return;
+    if (!text) text = currentLanguage() === "pt-BR" ? "Analise esta fotografia e diga-me que alimentos consegue reconhecer." : "Analisa esta fotografia e diz-me que alimentos consegues reconhecer.";
+    nutriMessages.push({ role: "user", text: text, hasPhoto: !!image });
+    if (nutriMessages.length > 20) nutriMessages = nutriMessages.slice(-20);
+    input.value = "";
+    nutriPhotoData = "";
+    updateNutriAttachment();
+    nutriRequestPending = true;
+    document.getElementById("nutri-send").disabled = true;
+    document.getElementById("nutri-photo-button").disabled = true;
+    renderNutriMessages(true);
+    try {
+      var response = await fetch("/api/nutri-assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: nutriConversationForRequest(),
+          favoriteFoods: getFavoriteFoods(),
+          language: currentLanguage(),
+          country: currentCountry(),
+          image: image || ""
+        })
+      });
+      var result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Não foi possível obter uma resposta agora.");
+      nutriMessages.push({ role: "assistant", text: String(result.answer || "Não consegui preparar uma resposta. Tenta novamente.").slice(0, 5000) });
+    } catch (error) {
+      nutriMessages.push({ role: "assistant", text: error.message || "Não foi possível ligar ao Nutri AI. Tenta novamente." });
+    } finally {
+      nutriRequestPending = false;
+      document.getElementById("nutri-send").disabled = false;
+      document.getElementById("nutri-photo-button").disabled = false;
+      renderNutriMessages(false);
+      input.focus();
+    }
   }
 
   function setMealAIStatus(message, kind) {
@@ -936,7 +1141,8 @@
         waterGoal: number(data.get("waterGoal")) || 2000,
         proteinGoal: number(data.get("proteinGoal")),
         carbsGoal: number(data.get("carbsGoal")),
-        fatGoal: number(data.get("fatGoal"))
+        fatGoal: number(data.get("fatGoal")),
+        favoriteFoods: normalizeFavoriteFoods(data.getAll("favoriteFoods"))
       };
       if (oldWeight !== state.profile.weight) state.weights.push({ id: makeId(), date: dateKey(new Date()), weight: state.profile.weight });
       saveState();
@@ -1038,6 +1244,8 @@
     if (action === "start-fast") return startFast();
     if (action === "stop-fast") return stopFast();
     if (action === "add-recipe") return addRecipeToList(actionEl.getAttribute("data-recipe"));
+    if (action === "edit-food-preferences") return openProfileDialog();
+    if (action === "open-nutri") return openNutri();
     if (action === "delete-activity") {
       state.activities = state.activities.filter(function (item) { return item.id !== id; });
       saveState(); renderPage(); return showToast("Atividade removida.");
@@ -1089,7 +1297,24 @@
   });
   pageContent.addEventListener("submit", handleFormSubmit);
   document.getElementById("profile-form").addEventListener("submit", handleProfileSubmit);
+  document.getElementById("profile-form").addEventListener("change", handleFavoriteChange);
+  pageContent.addEventListener("change", handleFavoriteChange);
   document.getElementById("meal-form").addEventListener("submit", handleMealSubmit);
+  document.getElementById("open-nutri").addEventListener("click", openNutri);
+  document.getElementById("close-nutri").addEventListener("click", function () { closeDialog(document.getElementById("nutri-dialog")); });
+  document.getElementById("nutri-dialog").addEventListener("click", function (event) {
+    if (event.target === event.currentTarget) closeDialog(event.currentTarget);
+  });
+  document.getElementById("nutri-form").addEventListener("submit", sendNutriMessage);
+  document.getElementById("nutri-photo-button").addEventListener("click", function () { document.getElementById("nutri-photo").click(); });
+  document.getElementById("nutri-photo").addEventListener("change", handleNutriPhotoChange);
+  document.getElementById("remove-nutri-photo").addEventListener("click", function () { nutriPhotoData = ""; updateNutriAttachment(); });
+  document.getElementById("nutri-suggestions").addEventListener("click", function (event) {
+    var button = event.target.closest("[data-nutri-prompt]");
+    if (!button) return;
+    document.getElementById("nutri-message").value = button.getAttribute("data-nutri-prompt") || "";
+    document.getElementById("nutri-form").requestSubmit();
+  });
   document.getElementById("meal-photo").addEventListener("change", handlePhotoChange);
   document.getElementById("estimate-meal-ai").addEventListener("click", estimateMealFromInput);
   document.getElementById("lookup-barcode").addEventListener("click", lookupBarcode);

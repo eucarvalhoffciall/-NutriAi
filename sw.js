@@ -1,5 +1,5 @@
 "use strict";
-var CACHE_NAME = "nutriai-app-shell-v4";
+var CACHE_NAME = "nutriai-app-shell-v5";
 var SHELL = ["./", "./index.html", "./app.css", "./app.js", "./manifest.webmanifest", "./icon.svg", "./admin.html"];
 self.addEventListener("install", function (event) {
   event.waitUntil(caches.open(CACHE_NAME).then(function (cache) { return cache.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));

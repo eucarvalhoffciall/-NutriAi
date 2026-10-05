@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0e5a43">
-  <meta name="description" content="Área de aplicação NutriAI: diário alimentar, metas e acompanhamento pessoal.">
+  <meta name="description" content="Área de aplicação NutriAI: diário alimentar, gastronomia personalizada, menus e acompanhamento pessoal.">
   <title>NutriAI — A tua área</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -21,7 +21,7 @@
         <button class="nav-item" data-page="meals"><span>◉</span> Diário alimentar</button>
         <button class="nav-item" data-page="progress"><span>↗</span> Progresso</button>
         <button class="nav-item" data-page="habits"><span>◷</span> Hábitos</button>
-        <button class="nav-item" data-page="recipes"><span>✳</span> Receitas e lista</button>
+        <button class="nav-item" data-page="recipes"><span>✳</span> Gastronomia</button>
         <button class="nav-item" data-page="settings"><span>⚙</span> Perfil e metas</button>
       </nav>
       <div class="side-foot">
@@ -63,7 +63,7 @@
     <button data-page="meals"><span>◉</span><small>Refeições</small></button>
     <button data-page="progress"><span>↗</span><small>Progresso</small></button>
     <button data-page="habits"><span>◷</span><small>Hábitos</small></button>
-    <button data-page="recipes"><span>✳</span><small>Receitas</small></button>
+    <button data-page="recipes"><span>✳</span><small>Gastronomia</small></button>
   </nav>
 
   <dialog class="modal" id="profile-dialog" aria-labelledby="profile-title">
@@ -97,6 +97,30 @@
         <label class="field span-2">Objetivo pessoal
           <select name="goal"><option value="">Escolher mais tarde</option><option value="perder">Perder peso</option><option value="manter">Manter o peso</option><option value="ganhar">Aumentar o peso</option><option value="habitos">Acompanhar hábitos</option></select>
         </label>
+        <fieldset class="food-picker span-2">
+          <legend>Alimentos de que gostas mais</legend>
+          <p>Escolhe até 8. Vamos usar as tuas preferências para sugerir receitas e menus com esses alimentos. <span class="food-count" data-food-count>0/8 selecionados</span></p>
+          <div class="food-choice-grid">
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="ovos"><span>Ovos</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="frango"><span>Frango</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="peixe"><span>Peixe</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="atum"><span>Atum</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="grao"><span>Grão-de-bico</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="feijao"><span>Feijão</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="lentilhas"><span>Lentilhas</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="arroz"><span>Arroz</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="batata"><span>Batata</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="aveia"><span>Aveia</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="iogurte"><span>Iogurte natural</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="tomate"><span>Tomate</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="espinafres"><span>Espinafres</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="brocolos"><span>Brócolos</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="cogumelos"><span>Cogumelos</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="fruta"><span>Fruta da época</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="tofu"><span>Tofu</span></label>
+            <label class="food-choice"><input type="checkbox" name="favoriteFoods" value="queijo"><span>Queijo fresco</span></label>
+          </div>
+        </fieldset>
         <label class="field">Peso atual (kg)
           <input name="weight" type="number" min="25" max="350" step="0.1" inputmode="decimal" required placeholder="Ex.: 72,5">
         </label>
@@ -180,6 +204,39 @@
       <input type="hidden" name="analysisNote">
       <button class="button primary wide" type="submit">Guardar refeição <span>→</span></button>
     </form>
+  </dialog>
+
+  <button class="nutri-launcher" id="open-nutri" type="button" aria-haspopup="dialog" aria-controls="nutri-dialog" aria-label="Abrir assistente Nutri AI">
+    <span class="nutri-launcher-icon" aria-hidden="true">✦</span><span class="nutri-launcher-copy"><strong>Nutri AI</strong><small>Fala comigo</small></span>
+  </button>
+  <dialog class="nutri-dialog" id="nutri-dialog" aria-labelledby="nutri-title">
+    <section class="nutri-panel">
+      <header class="nutri-header">
+        <div class="nutri-avatar" aria-hidden="true">✦</div>
+        <div><h2 id="nutri-title">Nutri AI</h2><p>O teu assistente alimentar</p></div>
+        <button class="nutri-close" id="close-nutri" type="button" aria-label="Fechar assistente">×</button>
+      </header>
+      <p class="nutri-intro">Pede uma ideia de receita com os teus favoritos, uma dica prática ou uma opinião geral sobre um alimento.</p>
+      <div class="nutri-suggestions" id="nutri-suggestions" aria-label="Sugestões para começar">
+        <button type="button" data-nutri-prompt="Sugere uma receita simples com os alimentos que escolhi no meu perfil.">Receita com os meus favoritos</button>
+        <button type="button" data-nutri-prompt="O que devo ter em conta ao escolher este alimento?">Avaliar um alimento</button>
+        <button type="button" data-nutri-prompt="Dá-me uma dica alimentar prática para hoje.">Dica para hoje</button>
+      </div>
+      <div class="nutri-chat-log" id="nutri-chat-log" role="log" aria-live="polite" aria-relevant="additions text"></div>
+      <div class="nutri-attachment" id="nutri-attachment" hidden>
+        <img id="nutri-photo-preview" alt="Pré-visualização da fotografia para o Nutri AI">
+        <span id="nutri-photo-name">Fotografia anexada</span>
+        <button id="remove-nutri-photo" type="button" aria-label="Remover fotografia">×</button>
+      </div>
+      <form class="nutri-form" id="nutri-form">
+        <input id="nutri-photo" type="file" accept="image/*" capture="environment" hidden>
+        <button class="nutri-photo-button" id="nutri-photo-button" type="button" aria-label="Anexar fotografia de um alimento">＋</button>
+        <label class="sr-only" for="nutri-message">Escreve a tua pergunta</label>
+        <input id="nutri-message" name="message" maxlength="1000" autocomplete="off" placeholder="Pergunta ao Nutri…">
+        <button class="nutri-send" id="nutri-send" type="submit" aria-label="Enviar mensagem">↑</button>
+      </form>
+      <p class="nutri-disclaimer">As respostas são informação geral, não aconselhamento médico. As mensagens e fotografias enviadas são processadas pela IA e não são guardadas no diário.</p>
+    </section>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

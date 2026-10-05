@@ -46,7 +46,7 @@
 
       <div class="privacy-note" role="status">
         <span class="privacy-icon">i</span>
-        <span><strong>Os teus registos ficam neste dispositivo.</strong> As fotografias são enviadas ao serviço de IA para estimar alimentos, porções e nutrientes; revê os resultados antes de guardar.</span>
+        <span><strong>O teu diário fica guardado neste dispositivo.</strong> As fotografias são analisadas pela IA para identificar os alimentos e estimar calorias, porções e nutrientes. Revê os resultados antes de guardar.</span>
       </div>
 
       <section class="page-content" id="page-content" aria-live="polite"></section>
@@ -75,6 +75,12 @@
       <div class="form-grid">
         <label class="field span-2">Como te chamas?
           <input name="name" autocomplete="name" maxlength="60" required placeholder="O teu nome">
+        </label>
+        <label class="field">Idioma preferido
+          <select name="language"><option value="pt-PT" selected>Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option></select>
+        </label>
+        <label class="field">País/região de referência
+          <select name="country"><option value="PT" selected>Portugal</option><option value="BR">Brasil</option></select>
         </label>
         <label class="field">Idade
           <input name="age" type="number" min="16" max="110" inputmode="numeric" placeholder="Opcional">
@@ -175,7 +181,11 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script>
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
-      window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(function (registration) {
+          return registration.update();
+        }).catch(function () {});
+      });
     }
   </script>
 </body>

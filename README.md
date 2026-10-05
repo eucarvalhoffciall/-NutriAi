@@ -15,6 +15,7 @@ Em produção, a rota `/api/analyze-meal` usa o AI Gateway da Vercel. A chave nu
 - Perfil, refeições e metas guardados neste navegador.
 - Análise automática da fotografia escolhida: identifica o prato, estima a porção e preenche calorias e macronutrientes.
 - Estimativa nutricional por descrição escrita, através do botão «Estimar com IA».
+- Preferência de idioma (Português de Portugal ou Português do Brasil) e país de referência (Portugal ou Brasil) no perfil. O padrão é Português de Portugal.
 - Pesquisa de produtos embalados pelo código de barras na Open Food Facts.
 - Registo de água, peso, actividade física e jejum.
 - Gráfico de evolução do peso, receitas, lista de compras, tema escuro e exportação JSON.
@@ -22,11 +23,11 @@ Em produção, a rota `/api/analyze-meal` usa o AI Gateway da Vercel. A chave nu
 
 ## Como funciona a análise
 
-A fotografia é redimensionada no dispositivo e enviada à rota de servidor `/api/analyze-meal`. Essa rota pede ao AI Gateway uma estimativa estruturada em português de Portugal. O resultado preenche os campos do formulário; a pessoa pode rever e alterar os valores antes de guardar.
+A fotografia é redimensionada no dispositivo e enviada à rota de servidor `/api/analyze-meal`. Essa rota pede ao AI Gateway uma estimativa estruturada no idioma e com o país de referência escolhidos no perfil. O resultado preenche os campos do formulário; a pessoa pode rever e alterar os valores antes de guardar.
 
 As quantidades e calorias estimadas a partir de uma imagem podem estar erradas, especialmente quando a porção ou os ingredientes não estão visíveis. Confirma os resultados. A fotografia é enviada ao serviço de IA para análise; os restantes registos continuam guardados localmente no navegador e não são sincronizados entre dispositivos.
 
-Para testes locais, define `AI_GATEWAY_API_KEY` no servidor. Em produção na Vercel, o AI SDK pode autenticar pelo OIDC do projecto. O uso do modelo pode gerar custos no AI Gateway.
+Para testes locais, define `AI_GATEWAY_API_KEY` no servidor. Em produção na Vercel, o AI SDK pode autenticar pelo OIDC do projecto. Erros de créditos (HTTP 402) e de limite/quota (HTTP 429) são apresentados separadamente. O uso do modelo pode gerar custos no AI Gateway.
 
 ## Limitações
 

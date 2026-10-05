@@ -4,26 +4,30 @@ Aplicação web progressiva para registo alimentar, acompanhamento de hábitos e
 
 ## Executar localmente
 
-1. Serve esta pasta por HTTP, por exemplo:
+1. Instala as dependências com `npm install`.
+2. Para usar a análise por IA fora da Vercel, define `AI_GATEWAY_API_KEY` apenas no ambiente do servidor.
+3. Serve esta pasta por HTTP e abre `http://localhost:8000/`.
 
-   `python -m http.server 8000`
+Em produção, a rota `/api/analyze-meal` usa o AI Gateway da Vercel. A chave nunca é incluída no JavaScript enviado ao navegador.
 
-2. Abre `http://localhost:8000/`.
+## Funcionalidades
 
-## Funcionalidades nesta versão
-
-- Perfil e objectivos guardados neste navegador.
-- Registo manual de refeições, calorias e macronutrientes.
-- Pesquisa de produtos embalados através do código de barras com Open Food Facts.
-- Anexo de fotografia ao registo da refeição.
+- Perfil, refeições e metas guardados neste navegador.
+- Análise automática da fotografia escolhida: identifica o prato, estima a porção e preenche calorias e macronutrientes.
+- Estimativa nutricional por descrição escrita, através do botão «Estimar com IA».
+- Pesquisa de produtos embalados pelo código de barras na Open Food Facts.
 - Registo de água, peso, actividade física e jejum.
-- Gráfico de evolução do peso, receitas, lista de compras e exportação JSON.
+- Gráfico de evolução do peso, receitas, lista de compras, tema escuro e exportação JSON.
 - Interface adaptável a telemóvel e instalável como PWA em alojamento HTTPS compatível.
 
-## Limitações actuais
+## Como funciona a análise
 
-Este é um MVP local: não cria contas online, não sincroniza dados entre dispositivos e não tem base de dados na nuvem. Os dados ficam no armazenamento local do navegador. A fotografia é guardada como anexo, mas ainda não identifica automaticamente os alimentos nem calcula as calorias. Os valores nutricionais são introduzidos pela pessoa; confirma-os sempre com a embalagem ou com uma fonte de confiança.
+A fotografia é redimensionada no dispositivo e enviada à rota de servidor `/api/analyze-meal`. Essa rota pede ao AI Gateway uma estimativa estruturada em português de Portugal. O resultado preenche os campos do formulário; a pessoa pode rever e alterar os valores antes de guardar.
 
-A pesquisa de código de barras envia o código à Open Food Facts. O ditado por voz depende do suporte do navegador. Não estão incluídos pagamentos nem autenticação.
+As quantidades e calorias estimadas a partir de uma imagem podem estar erradas, especialmente quando a porção ou os ingredientes não estão visíveis. Confirma os resultados. A fotografia é enviada ao serviço de IA para análise; os restantes registos continuam guardados localmente no navegador e não são sincronizados entre dispositivos.
 
-Antes de disponibilizar a clientes, falta integrar autenticação, sincronização segura, análise de imagens no servidor, pagamentos e documentação de privacidade/consentimento. Chaves de serviços externos nunca devem ser incluídas no código público do navegador.
+Para testes locais, define `AI_GATEWAY_API_KEY` no servidor. Em produção na Vercel, o AI SDK pode autenticar pelo OIDC do projecto. O uso do modelo pode gerar custos no AI Gateway.
+
+## Limitações
+
+Este MVP não cria contas online nem tem base de dados na nuvem. O ditado por voz depende do suporte do navegador. A NutriAI é uma ferramenta de registo e informação geral e não substitui aconselhamento de um profissional de saúde.

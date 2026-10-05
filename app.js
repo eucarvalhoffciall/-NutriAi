@@ -21,7 +21,7 @@
   ];
 
   function loadState() {
-    var initial = { profile: null, meals: [], water: [], activities: [], weights: [], fast: null, fastHistory: [], shopping: [], dark: false };
+    var initial = { profile: null, meals: [], water: [], activities: [], weights: [], fast: null, fastHistory: [], shopping: [], xp: 0, xpAwards: [], dark: false };
     try {
       var saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
       if (!saved || typeof saved !== "object") return initial;
@@ -37,6 +37,8 @@
     if (!Array.isArray(initial.weights)) initial.weights = [];
     if (!Array.isArray(initial.fastHistory)) initial.fastHistory = [];
     if (!Array.isArray(initial.shopping)) initial.shopping = [];
+    if (!Array.isArray(initial.xpAwards)) initial.xpAwards = [];
+    initial.xp = number(initial.xp);
     return initial;
   }
 
@@ -189,6 +191,46 @@
     return state.activities.filter(function (entry) { return entry.date === key; });
   }
 
+  function getDailyChallenges(key) {
+    var meals = getMeals(key);
+    var waterGoal = number(state.profile && state.profile.waterGoal) || 2000;
+    var movement = getActivities(key).reduce(function (total, entry) { return total + number(entry.minutes); }, 0);
+    return [
+      { id: "meal", title: "Regista uma refeição", icon: "◉", current: Math.min(meals.length, 1), target: 1, unit: "refeição", points: 15 },
+      { id: "photo", title: "Analisa um prato por fotografia", icon: "✦", current: Math.min(meals.filter(function (meal) { return meal.analysisConfidence; }).length, 1), target: 1, unit: "análise", points: 20 },
+      { id: "water", title: "Acompanha a tua hidratação", icon: "◌", current: Math.min(getWater(key), waterGoal), target: waterGoal, unit: "ml", points: 15 },
+      { id: "movement", title: "Regista 20 minutos de movimento", icon: "↗", current: Math.min(movement, 20), target: 20, unit: "min", points: 15 }
+    ];
+  }
+
+  function awardReadyChallenges(key) {
+    var awards = Array.isArray(state.xpAwards) ? state.xpAwards : (state.xpAwards = []);
+    var known = new Set(awards.map(function (award) { return award.key; }));
+    var total = 0;
+    getDailyChallenges(key).forEach(function (challenge) {
+      var awardKey = key + ":" + challenge.id;
+      if (challenge.current < challenge.target || known.has(awardKey)) return;
+      awards.push({ key: awardKey, date: key, points: challenge.points, title: challenge.title });
+      total += challenge.points;
+    });
+    if (total) state.xp = number(state.xp) + total;
+    return total;
+  }
+
+  function getLevel() {
+    var xp = number(state.xp);
+    return { level: Math.floor(xp / 100) + 1, inLevel: xp % 100, total: xp };
+  }
+
+  function getAchievements() {
+    var photoAnalyses = state.meals.filter(function (meal) { return !!meal.analysisConfidence; }).length;
+    return [
+      { icon: "🌱", title: "Primeiro registo", progress: Math.min(state.meals.length, 1), target: 1, unlocked: state.meals.length >= 1 },
+      { icon: "📸", title: "Olho atento", progress: Math.min(photoAnalyses, 5), target: 5, unlocked: photoAnalyses >= 5 },
+      { icon: "🔥", title: "Ritmo constante", progress: Math.min(getStreak(), 3), target: 3, unlocked: getStreak() >= 3 }
+    ];
+  }
+
   function showToast(message) {
     var toast = document.getElementById("toast");
     toast.textContent = localizeText(message);
@@ -222,6 +264,49 @@
     return "<div class='" + className + "' aria-label='" + clampPercent(value, goal) + "%'><span style='width:" + clampPercent(value, goal) + "%'></span></div>";
   }
 
+  function renderGamification() {
+    var level = getLevel();
+    var challenges = getDailyChallenges(dateKey(new Date()));
+    var achievements = getAchievements();
+    var challengeHtml = challenges.map(function (challenge) {
+      var complete = challenge.current >= challenge.target;
+      var currentLabel = challenge.unit === "ml" ? whole(challenge.current) + " / " + whole(challenge.target) + " ml" : whole(challenge.current) + " / " + whole(challenge.target) + " " + challenge.unit;
+      return "<article class='quest-card " + (complete ? "is-complete" : "") + "'><span class='quest-icon'>" + challenge.icon + "</span><div class='quest-copy'><div class='quest-title-row'><strong>" + esc(challenge.title) + "</strong><span class='quest-xp'>+" + challenge.points + " XP</span></div><div class='quest-progress-row'><span>" + currentLabel + "</span><span>" + (complete ? "Concluído" : "Hoje") + "</span></div><div class='quest-track'><span style='width:" + clampPercent(challenge.current, challenge.target) + "%'></span></div></div></article>";
+    }).join("");
+    var achievementHtml = achievements.map(function (achievement) {
+      return "<div class='achievement " + (achievement.unlocked ? "unlocked" : "") + "' aria-label='" + esc(achievement.title) + (achievement.unlocked ? " desbloqueada" : " por desbloquear") + "'><span class='achievement-icon'>" + achievement.icon + "</span><strong>" + esc(achievement.title) + "</strong><small>" + (achievement.unlocked ? "Desbloqueada" : achievement.progress + " / " + achievement.target) + "</small></div>";
+    }).join("");
+    return "<section class='card game-card'><div class='game-card-top'><div><div class='eyebrow'>O teu ritmo, ao teu ritmo</div><h2>Nível " + String(level.level).padStart(2, "0") + " <span>· Explorador</span></h2><p>Pequenas escolhas consistentes contam.</p></div><div class='xp-orb'><span>✦</span><strong>" + whole(level.total) + "</strong><small>XP</small></div></div><div class='xp-bar-label'><span>Progresso para o nível " + (level.level + 1) + "</span><strong>" + whole(level.inLevel) + " / 100 XP</strong></div><div class='xp-track'><span style='width:" + level.inLevel + "%'></span></div></section>" +
+      "<section class='card quest-section'>" + cardHeader("Desafios de hoje", "Completa actividades simples para ganhar XP", "<span class='section-mark'>✦ DIÁRIO</span>") + "<div class='quest-list'>" + challengeHtml + "</div></section>" +
+      "<section class='card'>" + cardHeader("As tuas conquistas", "Marcos de consistência, sem competição", "") + "<div class='achievement-grid'>" + achievementHtml + "</div></section>";
+  }
+
+  function renderFeaturedMeal() {
+    var latest = state.meals.slice().sort(function (a, b) {
+      return String(b.date || "").localeCompare(String(a.date || "")) || String(b.time || "").localeCompare(String(a.time || ""));
+    })[0];
+    if (!latest) {
+      return "<section class='card smart-meal empty-smart'><div class='smart-eyebrow'>✦ NUTRIAI INTELIGENTE</div><h2>A tua próxima refeição, em detalhe.</h2><p>Tira uma fotografia para obter uma estimativa de calorias, porção e macronutrientes.</p><button class='button' type='button' data-action='add-meal'>＋ Analisar uma refeição</button></section>";
+    }
+    var confidenceLabels = { low: "Confiança baixa", medium: "Confiança média", high: "Confiança alta" };
+    var confidence = latest.analysisConfidence ? "<span class='confidence-chip'>" + esc(confidenceLabels[latest.analysisConfidence] || "Estimativa IA") + "</span>" : "<span class='confidence-chip neutral'>Registo manual</span>";
+    var image = typeof latest.photoData === "string" && /^data:image\/(?:jpeg|png|webp);base64,/.test(latest.photoData)
+      ? "<img src='" + esc(latest.photoData) + "' alt='Fotografia de " + esc(latest.title) + "'>"
+      : "<span aria-hidden='true'>◉</span>";
+    var macros = [
+      { label: "Energia", value: whole(latest.calories), unit: "kcal", color: "" },
+      { label: "Proteína", value: decimal(latest.protein), unit: "g", color: "" },
+      { label: "Hidratos", value: decimal(latest.carbs), unit: "g", color: "gold" },
+      { label: "Gordura", value: decimal(latest.fat), unit: "g", color: "purple" }
+    ].map(function (item) {
+      return "<div class='nutrition-tile " + item.color + "'><span>" + item.label + "</span><strong>" + item.value + "<small> " + item.unit + "</small></strong></div>";
+    }).join("");
+    var items = Array.isArray(latest.analysisItems) ? latest.analysisItems.slice(0, 4).map(function (item) {
+      return "<span>" + esc(item.name) + (item.portion ? " · " + esc(item.portion) : "") + "</span>";
+    }).join("") : "";
+    return "<section class='card smart-meal'><div class='smart-meal-head'><div class='smart-food-image'>" + image + "</div><div class='smart-meal-heading'><div class='smart-eyebrow'>✦ ÚLTIMA REFEIÇÃO</div><h2 class='meal-title-user'>" + esc(latest.title) + "</h2><p>Porção: " + esc(latest.portion || "não indicada") + "</p>" + confidence + "</div><button class='text-link' type='button' data-action='add-meal'>＋ Nova</button></div><div class='nutrition-grid'>" + macros + "</div>" + (items ? "<div class='food-chip-list'>" + items + "</div>" : "") + (latest.analysisNote ? "<p class='smart-note'>" + esc(latest.analysisNote) + "</p>" : "") + "<p class='estimate-disclaimer'>Valores estimados por porção. Confirma os ingredientes e ajusta se necessário.</p></section>";
+  }
+
   function mealIcon(category) {
     var icons = { "Pequeno-almoço": "☀", "Almoço": "◒", "Lanche": "◌", "Jantar": "☾", "Outro": "✦" };
     return icons[category] || "◉";
@@ -238,6 +323,8 @@
   }
 
   function renderHome() {
+    var newlyAwarded = awardReadyChallenges(dateKey(new Date()));
+    if (newlyAwarded) saveState();
     var profile = state.profile || {};
     var meals = getMeals(viewDate);
     var totals = totalsForMeals(meals);
@@ -263,10 +350,12 @@
     return "<div class='page-heading'><div><div class='eyebrow'>O teu espaço</div><h1>Olá, " + esc(name) + ".</h1><p>Um resumo do que registaste, sem complicar.</p></div><div class='heading-actions'>" + dateActions() + "<button class='button' type='button' data-action='add-meal'>＋ Registar refeição</button></div></div>" +
       "<div class='dashboard-grid'><div class='stack'>" +
       "<section class='card hero-card'><div class='hero-card-head'><div><div class='eyebrow'>NutriAI · diário pessoal</div><h1>O teu dia, à tua maneira.</h1><p>Pequenos registos ajudam-te a ver o que já anotaste.</p></div><span class='date-badge'>" + esc(formatDate(viewDate, { weekday: "long", day: "numeric", month: "long" })) + "</span></div></section>" +
+      renderGamification() +
       "<section class='card'>" + cardHeader("Energia registada", "Soma das refeições que adicionaste", "") +
       "<div class='calorie-card'><div><div class='calorie-ring' style='--progress:" + clampPercent(totals.calories, goal || 1) + "%'><div class='ring-content'><strong>" + whole(totals.calories) + "</strong><small>kcal registadas</small></div></div><div class='ring-remaining'>" + (goal ? whole(remaining) + " kcal até à meta definida" : "Define a tua meta no perfil") + "</div></div>" +
       "<div class='calorie-details'><div class='detail-row'><span>Meta diária definida</span><strong>" + (goal ? whole(goal) + " kcal" : "—") + "</strong></div>" + progressBar(totals.calories, goal || 1) + "<div class='detail-row'><span>Refeições registadas</span><strong>" + meals.length + "</strong></div><div class='detail-row'><span>Atividade registada</span><strong>" + minutes + " min</strong></div></div></div></section>" +
       "<section class='card'>" + cardHeader("Macronutrientes", "Valores inseridos nos teus registos", "") + "<div class='macro-grid'>" + macroHtml + "</div></section>" +
+      renderFeaturedMeal() +
       "<section class='card'>" + cardHeader("O teu diário", "Refeições de " + formatDate(viewDate, { day: "numeric", month: "long" }), "<button class='text-link' type='button' data-page='meals'>Ver diário →</button>") + mealsHtml + "</section>" +
       "</div><div class='stack'>" +
       "<section class='card'>" + cardHeader("Hidratação", "Registos de hoje", "<div class='water-glass' style='--water-fill:" + clampPercent(water, waterGoal) + "%'><span>" + clampPercent(water, waterGoal) + "%</span></div>") +
@@ -481,6 +570,8 @@
     var form = document.getElementById("meal-form");
     mealAnalysisSequence += 1;
     form.reset();
+    document.getElementById("meal-ai-result").hidden = true;
+    document.getElementById("meal-ai-result").innerHTML = "";
     document.getElementById("estimate-meal-ai").disabled = false;
     document.getElementById("estimate-meal-ai").textContent = "Estimar com IA";
     form.elements.date.value = viewDate;
@@ -538,6 +629,13 @@
       showToast("Confirma a descrição e as calorias.");
       return;
     }
+    var analysisItems = [];
+    try {
+      var parsedItems = JSON.parse(String(data.get("analysisItems") || "[]"));
+      if (Array.isArray(parsedItems)) analysisItems = parsedItems.slice(0, 12).map(function (item) {
+        return { name: String(item.name || "").slice(0, 100), portion: String(item.portion || "").slice(0, 80) };
+      });
+    } catch (error) {}
     var meal = {
       id: makeId(),
       title: String(data.get("title") || "").trim(),
@@ -549,14 +647,18 @@
       protein: number(data.get("protein")),
       carbs: number(data.get("carbs")),
       fat: number(data.get("fat")),
+      analysisConfidence: ["low", "medium", "high"].indexOf(String(data.get("analysisConfidence") || "")) >= 0 ? String(data.get("analysisConfidence")) : "",
+      analysisItems: analysisItems,
+      analysisNote: String(data.get("analysisNote") || "").slice(0, 240),
       photoData: String(data.get("photoData") || "")
     };
     state.meals.push(meal);
+    var awarded = meal.date === dateKey(new Date()) ? awardReadyChallenges(meal.date) : 0;
     saveState();
     viewDate = meal.date;
     closeDialog(mealDialog);
     renderPage();
-    showToast("Refeição guardada no diário.");
+    showToast(awarded ? "Desafio concluído · +" + awarded + " XP. Refeição guardada!" : "Refeição guardada no diário.");
   }
 
   function makeId() {
@@ -607,12 +709,27 @@
     form.elements.protein.value = number(result.protein).toFixed(1);
     form.elements.carbs.value = number(result.carbs).toFixed(1);
     form.elements.fat.value = number(result.fat).toFixed(1);
+    form.elements.analysisConfidence.value = result.confidence || "";
+    form.elements.analysisItems.value = JSON.stringify(Array.isArray(result.items) ? result.items.slice(0, 12) : []);
+    form.elements.analysisNote.value = String(result.note || "").slice(0, 240);
+  }
+
+  function renderAIResult(result) {
+    var panel = document.getElementById("meal-ai-result");
+    if (!panel) return;
+    var confidenceLabels = { low: "Confiança baixa", medium: "Confiança média", high: "Confiança alta" };
+    var items = Array.isArray(result.items) ? result.items.slice(0, 8).map(function (item) {
+      return "<li><span>" + esc(item.name) + "</span><strong>" + esc(item.portion || "porção não estimada") + "</strong></li>";
+    }).join("") : "";
+    panel.innerHTML = "<div class='ai-result-top'><div><span class='ai-result-kicker'>✦ ANÁLISE VISUAL</span><h3>" + esc(result.title || "Refeição identificada") + "</h3><p>Porção estimada: " + esc(result.portion || "não indicada") + "</p></div><span class='confidence-chip'>" + esc(confidenceLabels[result.confidence] || "Estimativa IA") + "</span></div><div class='nutrition-grid ai-nutrition-grid'><div class='nutrition-tile energy'><span>Energia</span><strong>" + whole(result.calories) + "<small> kcal</small></strong></div><div class='nutrition-tile'><span>Proteína</span><strong>" + decimal(result.protein) + "<small> g</small></strong></div><div class='nutrition-tile gold'><span>Hidratos</span><strong>" + decimal(result.carbs) + "<small> g</small></strong></div><div class='nutrition-tile purple'><span>Gordura</span><strong>" + decimal(result.fat) + "<small> g</small></strong></div></div>" + (items ? "<ul class='ai-food-list'>" + items + "</ul>" : "") + (result.note ? "<p class='smart-note'>" + esc(result.note) + "</p>" : "") + "<p class='estimate-disclaimer'>Estimativa por fotografia. Confirma os alimentos e a porção antes de guardar.</p>";
+    panel.hidden = false;
   }
 
   function runMealAnalysis(imageData, requestId) {
     var form = document.getElementById("meal-form");
     var button = document.getElementById("estimate-meal-ai");
     var originalButtonText = "Estimar com IA";
+    document.getElementById("meal-ai-result").hidden = true;
     var description = String(form.elements.title.value || "").trim().slice(0, 300);
     var portion = String(form.elements.portion.value || "").trim().slice(0, 80);
     button.disabled = true;
@@ -631,18 +748,14 @@
     }).then(function (result) {
       if (requestId !== mealAnalysisSequence) return;
       if (!result.foodRecognized) {
+        document.getElementById("meal-ai-result").hidden = true;
         setMealAIStatus(result.note || "Não consegui identificar uma refeição. Tenta uma fotografia mais nítida ou escreve o que comeste.", "error");
         return;
       }
       fillNutritionFields(result);
+      renderAIResult(result);
       var confidence = { low: "baixa", medium: "média", high: "alta" }[result.confidence] || "média";
-      var items = Array.isArray(result.items) ? result.items.slice(0, 4).map(function (item) { return item.name; }).filter(Boolean) : [];
-      var itemCount = Array.isArray(result.items) ? result.items.length : 0;
-      var summary = "A IA identificou " + (result.title || "a refeição") + ": cerca de " + whole(result.calories) + " kcal para " + (result.portion || "a porção estimada") + ". Confiança " + confidence + ".";
-      if (items.length) summary += " Inclui " + items.join(", ") + (itemCount > items.length ? " e outros ingredientes" : "") + ".";
-      if (result.note) summary += " " + result.note;
-      summary += " Confirma e ajusta os campos antes de guardar.";
-      setMealAIStatus(summary, "success");
+      setMealAIStatus("" + (result.title || "Refeição identificada") + " · " + whole(result.calories) + " kcal · confiança " + confidence + ". Revê a porção e os valores abaixo.", "success");
     }).catch(function (error) {
       if (requestId !== mealAnalysisSequence) return;
       setMealAIStatus(error.message || "Não foi possível analisar agora. Podes preencher os valores manualmente.", "error");
@@ -662,6 +775,10 @@
       return;
     }
     var requestId = ++mealAnalysisSequence;
+    document.getElementById("meal-ai-result").hidden = true;
+    document.getElementById("meal-form").elements.analysisConfidence.value = "";
+    document.getElementById("meal-form").elements.analysisItems.value = "[]";
+    document.getElementById("meal-form").elements.analysisNote.value = "";
     if (file.size > 12000000) {
       showToast("A fotografia é demasiado grande. Escolhe uma imagem com menos de 12 MB.");
       document.getElementById("estimate-meal-ai").disabled = false;
@@ -784,10 +901,12 @@
     if (kind === "activity") {
       var mins = number(data.get("minutes"));
       if (mins < 1) return showToast("Indica a duração da atividade.");
-      state.activities.push({ id: makeId(), date: dateKey(new Date()), name: String(data.get("name") || "").trim(), minutes: mins, calories: number(data.get("calories")) });
+      var activityDate = dateKey(new Date());
+      state.activities.push({ id: makeId(), date: activityDate, name: String(data.get("name") || "").trim(), minutes: mins, calories: number(data.get("calories")) });
+      var activityXP = awardReadyChallenges(activityDate);
       saveState();
       renderPage();
-      return showToast("Atividade registada.");
+      return showToast(activityXP ? "Desafio concluído · +" + activityXP + " XP. Atividade registada!" : "Atividade registada.");
     }
     if (kind === "shopping") {
       var ingredient = String(data.get("name") || "").trim();
@@ -830,10 +949,12 @@
   function addWater(amount) {
     var value = number(amount);
     if (value <= 0 || value > 5000) return showToast("Indica uma quantidade entre 1 e 5000 ml.");
-    state.water.push({ id: makeId(), date: dateKey(new Date()), amount: value, time: Date.now() });
+    var today = dateKey(new Date());
+    state.water.push({ id: makeId(), date: today, amount: value, time: Date.now() });
+    var waterXP = awardReadyChallenges(today);
     saveState();
     renderPage();
-    showToast(value + " ml de água registados.");
+    showToast(waterXP ? "Desafio concluído · +" + waterXP + " XP. " + value + " ml registados!" : value + " ml de água registados.");
   }
 
   function startFast() {

@@ -46,7 +46,7 @@
 
       <div class="privacy-note" role="status">
         <span class="privacy-icon">i</span>
-        <span><strong>Versão de demonstração:</strong> os teus registos ficam guardados neste navegador. Ainda não existe sincronização entre dispositivos nem análise automática de fotografias.</span>
+        <span><strong>Os teus registos ficam neste dispositivo.</strong> As fotografias são enviadas ao serviço de IA para estimar alimentos, porções e nutrientes; revê os resultados antes de guardar.</span>
       </div>
 
       <section class="page-content" id="page-content" aria-live="polite"></section>
@@ -123,7 +123,7 @@
       <button class="modal-close" type="button" data-close-meal aria-label="Fechar">×</button>
       <div class="modal-kicker"><span class="brand-mark small">N</span> Diário alimentar</div>
       <h2 id="meal-title">Registar refeição</h2>
-      <p class="modal-intro">Podes anexar uma fotografia e preencher os valores que tens. Nesta versão, a fotografia não é analisada automaticamente.</p>
+      <p class="modal-intro">Tira uma fotografia para identificar a refeição e estimar calorias e macronutrientes. Também podes escrever o que comeste e pedir uma estimativa.</p>
       <div class="barcode-row">
         <label class="field">Produto embalado — código de barras
           <input id="barcode-input" inputmode="numeric" autocomplete="off" placeholder="Lê ou escreve o código">
@@ -135,12 +135,14 @@
         <input id="meal-photo" type="file" accept="image/*" capture="environment">
         <span class="photo-symbol">＋</span>
         <strong id="photo-label">Tirar ou escolher uma fotografia</strong>
-        <small>Imagem redimensionada e guardada neste navegador</small>
+        <small>A análise começa automaticamente depois de escolheres a imagem</small>
         <img id="photo-preview" alt="Pré-visualização da fotografia da refeição" hidden>
       </label>
+      <div class="photo-analysis-status" id="meal-ai-status" role="status" aria-live="polite" hidden></div>
       <div class="form-grid">
         <label class="field span-2">O que comeste?
           <div class="input-with-button"><input name="title" id="meal-description" maxlength="100" required placeholder="Ex.: sopa de legumes e pão"><button class="dictate-button" id="dictate-meal" type="button" title="Ditado por voz">🎙</button></div>
+          <button class="button secondary estimate-ai-button" id="estimate-meal-ai" type="button">Estimar com IA</button>
         </label>
         <label class="field">Momento
           <select name="category"><option>Pequeno-almoço</option><option>Almoço</option><option>Lanche</option><option>Jantar</option><option>Outro</option></select>
@@ -164,7 +166,7 @@
           <input name="fat" type="number" min="0" max="1000" step="0.1" inputmode="decimal" value="0">
         </label>
       </div>
-      <p class="help-copy">Se usares o ditado, o reconhecimento é feito pelo serviço disponibilizado pelo navegador. A NutriAI não guarda o áudio.</p>
+      <p class="help-copy">As quantidades e os valores nutricionais são estimativas visuais, não medições exactas. Confirma e edita os campos antes de guardar. O ditado é processado pelo serviço do navegador.</p>
       <input type="hidden" name="photoData">
       <button class="button primary wide" type="submit">Guardar refeição <span>→</span></button>
     </form>

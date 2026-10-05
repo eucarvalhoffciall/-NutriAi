@@ -1,0 +1,19 @@
+{
+  "name": "NutriAI — Diário alimentar",
+  "short_name": "NutriAI",
+  "description": "Diário alimentar e acompanhamento pessoal.",
+  "lang": "pt-PT",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f4",
+  "theme_color": "#0e5a43",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

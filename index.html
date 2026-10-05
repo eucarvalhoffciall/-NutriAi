@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0e5a43">
+  <meta name="description" content="Área de aplicação NutriAI: diário alimentar, metas e acompanhamento pessoal.">
+  <title>NutriAI — A tua área</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="app.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-frame">
+    <aside class="sidebar" aria-label="Menu da aplicação">
+      <a class="brand" href="../" aria-label="NutriAI, página inicial"><span class="brand-mark">N</span><span>Nutri<span>AI</span></span></a>
+      <div class="side-label">A TUA ÁREA</div>
+      <nav class="side-nav" id="side-nav">
+        <button class="nav-item active" data-page="home"><span>⌂</span> Visão geral</button>
+        <button class="nav-item" data-page="meals"><span>◉</span> Diário alimentar</button>
+        <button class="nav-item" data-page="progress"><span>↗</span> Progresso</button>
+        <button class="nav-item" data-page="habits"><span>◷</span> Hábitos</button>
+        <button class="nav-item" data-page="recipes"><span>✳</span> Receitas e lista</button>
+        <button class="nav-item" data-page="settings"><span>⚙</span> Perfil e metas</button>
+      </nav>
+      <div class="side-foot">
+        <div class="side-foot-mark">✦</div>
+        <strong>Um dia de cada vez</strong>
+        <span>Registos simples para acompanhares a tua rotina.</span>
+      </div>
+    </aside>
+
+    <main class="main-shell">
+      <header class="topbar">
+        <div class="topbar-title">
+          <span class="live-dot"></span>
+          <span>NutriAI <b>·</b> espaço pessoal</span>
+        </div>
+        <div class="topbar-actions">
+          <span class="local-pill"><span>●</span> Dados neste dispositivo</span>
+          <button class="icon-button" id="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">◐</button>
+          <button class="user-chip" id="edit-profile" type="button"><span class="avatar" id="avatar-letter">N</span><span id="user-name-top">Perfil</span><span>⌄</span></button>
+        </div>
+      </header>
+
+      <div class="privacy-note" role="status">
+        <span class="privacy-icon">i</span>
+        <span><strong>Versão de demonstração:</strong> os teus registos ficam guardados neste navegador. Ainda não existe sincronização entre dispositivos nem análise automática de fotografias.</span>
+      </div>
+
+      <section class="page-content" id="page-content" aria-live="polite"></section>
+
+      <footer class="app-footer">
+        <span>NutriAI · ferramenta de registo e informação geral</span>
+        <span>Não substitui aconselhamento de um profissional de saúde.</span>
+      </footer>
+    </main>
+  </div>
+
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Navegação principal">
+    <button class="active" data-page="home"><span>⌂</span><small>Início</small></button>
+    <button data-page="meals"><span>◉</span><small>Refeições</small></button>
+    <button data-page="progress"><span>↗</span><small>Progresso</small></button>
+    <button data-page="habits"><span>◷</span><small>Hábitos</small></button>
+    <button data-page="recipes"><span>✳</span><small>Receitas</small></button>
+  </nav>
+
+  <dialog class="modal" id="profile-dialog" aria-labelledby="profile-title">
+    <form class="modal-card" id="profile-form">
+      <button class="modal-close" type="button" data-close-profile aria-label="Fechar">×</button>
+      <div class="modal-kicker"><span class="brand-mark small">N</span> O teu espaço NutriAI</div>
+      <h1 id="profile-title">Vamos preparar o teu perfil.</h1>
+      <p class="modal-intro">Guarda as tuas preferências neste dispositivo. As metas são preenchidas por ti; esta demonstração não prescreve um plano alimentar.</p>
+      <div class="form-grid">
+        <label class="field span-2">Como te chamas?
+          <input name="name" autocomplete="name" maxlength="60" required placeholder="O teu nome">
+        </label>
+        <label class="field">Idade
+          <input name="age" type="number" min="16" max="110" inputmode="numeric" placeholder="Opcional">
+        </label>
+        <label class="field">Altura (cm)
+          <input name="height" type="number" min="100" max="230" inputmode="numeric" placeholder="Opcional">
+        </label>
+        <label class="field">Sexo para estimativas futuras <span class="optional">opcional</span>
+          <select name="sex"><option value="">Prefiro não indicar</option><option value="feminino">Feminino</option><option value="masculino">Masculino</option></select>
+        </label>
+        <label class="field">Nível de atividade <span class="optional">opcional</span>
+          <select name="activityLevel"><option value="">Prefiro não indicar</option><option value="baixo">Pouco ativo</option><option value="leve">Atividade leve</option><option value="moderado">Atividade moderada</option><option value="alto">Muito ativo</option></select>
+        </label>
+        <label class="field span-2">Objetivo pessoal
+          <select name="goal"><option value="">Escolher mais tarde</option><option value="perder">Perder peso</option><option value="manter">Manter o peso</option><option value="ganhar">Aumentar o peso</option><option value="habitos">Acompanhar hábitos</option></select>
+        </label>
+        <label class="field">Peso atual (kg)
+          <input name="weight" type="number" min="25" max="350" step="0.1" inputmode="decimal" required placeholder="Ex.: 72,5">
+        </label>
+        <label class="field">Peso que pretendes acompanhar (kg)
+          <input name="targetWeight" type="number" min="25" max="350" step="0.1" inputmode="decimal" placeholder="Opcional">
+        </label>
+        <label class="field">Meta diária de energia (kcal)
+          <input name="calorieGoal" type="number" min="500" max="8000" inputmode="numeric" required placeholder="Definida por ti">
+        </label>
+        <label class="field">Meta de água (ml)
+          <input name="waterGoal" type="number" min="250" max="8000" step="250" inputmode="numeric" value="2000" required>
+        </label>
+        <label class="field">Proteína (g) <span class="optional">opcional</span>
+          <input name="proteinGoal" type="number" min="0" max="1000" inputmode="numeric" value="0">
+        </label>
+        <label class="field">Hidratos de carbono (g) <span class="optional">opcional</span>
+          <input name="carbsGoal" type="number" min="0" max="1500" inputmode="numeric" value="0">
+        </label>
+        <label class="field">Gordura (g) <span class="optional">opcional</span>
+          <input name="fatGoal" type="number" min="0" max="1000" inputmode="numeric" value="0">
+        </label>
+      </div>
+      <div class="privacy-callout"><span>◆</span><p>Os valores de energia e macronutrientes são metas introduzidas por ti. Para definir metas adequadas à tua saúde, procura aconselhamento profissional.</p></div>
+      <button class="button primary wide" type="submit">Guardar perfil <span>→</span></button>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="meal-dialog" aria-labelledby="meal-title">
+    <form class="modal-card" id="meal-form">
+      <button class="modal-close" type="button" data-close-meal aria-label="Fechar">×</button>
+      <div class="modal-kicker"><span class="brand-mark small">N</span> Diário alimentar</div>
+      <h2 id="meal-title">Registar refeição</h2>
+      <p class="modal-intro">Podes anexar uma fotografia e preencher os valores que tens. Nesta versão, a fotografia não é analisada automaticamente.</p>
+      <div class="barcode-row">
+        <label class="field">Produto embalado — código de barras
+          <input id="barcode-input" inputmode="numeric" autocomplete="off" placeholder="Lê ou escreve o código">
+        </label>
+        <button class="button secondary barcode-button" id="lookup-barcode" type="button">Consultar produto</button>
+      </div>
+      <p class="help-copy barcode-note">A consulta usa a base Open Food Facts. Confirma os valores com o rótulo: alguns produtos podem não ter informação completa.</p>
+      <label class="photo-drop" for="meal-photo">
+        <input id="meal-photo" type="file" accept="image/*" capture="environment">
+        <span class="photo-symbol">＋</span>
+        <strong id="photo-label">Tirar ou escolher uma fotografia</strong>
+        <small>Imagem redimensionada e guardada neste navegador</small>
+        <img id="photo-preview" alt="Pré-visualização da fotografia da refeição" hidden>
+      </label>
+      <div class="form-grid">
+        <label class="field span-2">O que comeste?
+          <div class="input-with-button"><input name="title" id="meal-description" maxlength="100" required placeholder="Ex.: sopa de legumes e pão"><button class="dictate-button" id="dictate-meal" type="button" title="Ditado por voz">🎙</button></div>
+        </label>
+        <label class="field">Momento
+          <select name="category"><option>Pequeno-almoço</option><option>Almoço</option><option>Lanche</option><option>Jantar</option><option>Outro</option></select>
+        </label>
+        <label class="field">Data
+          <input name="date" id="meal-date" type="date" required>
+        </label>
+        <label class="field">Porção (g ou descrição)
+          <input name="portion" maxlength="40" placeholder="Ex.: 1 prato, 150 g">
+        </label>
+        <label class="field">Energia (kcal)
+          <input name="calories" type="number" min="0" max="10000" step="1" inputmode="numeric" required placeholder="Introduz um valor">
+        </label>
+        <label class="field">Proteína (g)
+          <input name="protein" type="number" min="0" max="1000" step="0.1" inputmode="decimal" value="0">
+        </label>
+        <label class="field">Hidratos de carbono (g)
+          <input name="carbs" type="number" min="0" max="1500" step="0.1" inputmode="decimal" value="0">
+        </label>
+        <label class="field">Gordura (g)
+          <input name="fat" type="number" min="0" max="1000" step="0.1" inputmode="decimal" value="0">
+        </label>
+      </div>
+      <p class="help-copy">Se usares o ditado, o reconhecimento é feito pelo serviço disponibilizado pelo navegador. A NutriAI não guarda o áudio.</p>
+      <input type="hidden" name="photoData">
+      <button class="button primary wide" type="submit">Guardar refeição <span>→</span></button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
+    }
+  </script>
+</body>
+</html>

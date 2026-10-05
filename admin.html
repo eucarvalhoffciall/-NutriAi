@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a3228">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Administração · NutriAI</title>
+  <style>
+    :root{color-scheme:dark;--bg:#071612;--panel:#10251e;--panel2:#132d24;--ink:#eef7ef;--muted:#9fb3a6;--line:rgba(207,235,211,.12);--lime:#c9f46a;--green:#61c58d;--amber:#e7bd70}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 88% 0,rgba(71,145,94,.16),transparent 28%),var(--bg);color:var(--ink);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+    a{color:inherit;text-decoration:none}a:focus-visible{outline:3px solid var(--lime);outline-offset:4px;border-radius:8px}.wrap{width:min(1220px,100% - 38px);margin:0 auto;padding:26px 0 38px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:3px 0 24px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:10px;font-weight:850;letter-spacing:-.5px}.mark{width:35px;height:35px;border-radius:12px;background:var(--lime);display:grid;place-items:center;color:#123a2b;font-size:19px;font-weight:900;box-shadow:0 0 26px rgba(201,244,106,.16)}.brand small{display:block;font-size:8px;letter-spacing:1.7px;color:#a8c2af;text-transform:uppercase}.top-actions{display:flex;align-items:center;gap:12px}.status-pill{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:99px;padding:7px 11px;color:#cfdbd0;font-size:10px}.dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 12px rgba(231,189,112,.55)}.back-link{font-size:11px;font-weight:750;color:var(--lime)}
+    .hero{display:flex;justify-content:space-between;align-items:flex-end;gap:22px;padding:35px 0 23px}.eyebrow{color:var(--lime);font-size:9px;letter-spacing:1.8px;font-weight:850;text-transform:uppercase}.hero h1{font-size:clamp(28px,5vw,45px);line-height:1.05;letter-spacing:-1.8px;margin:8px 0 10px}.hero p{color:var(--muted);font-size:12px;margin:0;max-width:590px}.date-pill{border:1px solid var(--line);background:rgba(255,255,255,.035);padding:9px 12px;border-radius:12px;color:#c5d3c8;font-size:10px;white-space:nowrap}
+    .notice{display:grid;grid-template-columns:35px minmax(0,1fr);gap:12px;align-items:start;padding:16px 17px;border:1px solid rgba(231,189,112,.28);background:linear-gradient(105deg,rgba(231,189,112,.09),rgba(231,189,112,.025));border-radius:17px;margin-bottom:17px}.notice-icon{width:32px;height:32px;border-radius:10px;background:rgba(231,189,112,.15);color:var(--amber);display:grid;place-items:center;font-weight:900}.notice strong{display:block;font-size:12px}.notice p{margin:4px 0 0;color:#b4c3b6;font-size:10px;line-height:1.6}
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}.metric{background:linear-gradient(145deg,var(--panel),rgba(16,37,30,.8));border:1px solid var(--line);border-radius:17px;padding:15px;min-height:130px;position:relative;overflow:hidden}.metric:after{content:"";position:absolute;width:78px;height:78px;border:1px solid rgba(201,244,106,.1);border-radius:50%;right:-33px;top:-34px;box-shadow:0 0 0 12px rgba(201,244,106,.025)}.metric-label{display:flex;justify-content:space-between;align-items:center;gap:7px;color:#c3d1c6;font-size:10px}.metric-icon{width:26px;height:26px;border-radius:9px;background:rgba(201,244,106,.1);color:var(--lime);display:grid;place-items:center;font-size:13px}.metric-value{font-size:29px;line-height:1;font-weight:850;letter-spacing:-1.3px;margin:17px 0 7px;color:#f1f6ef}.metric-value.pending{color:#82968a}.metric-foot{color:#93a89a;font-size:9px;max-width:200px}
+    .grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:13px;margin-top:13px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:17px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:15px}.panel h2{font-size:13px;letter-spacing:-.2px;margin:0}.panel-head p{color:var(--muted);font-size:9px;margin:4px 0 0}.tag{border:1px solid var(--line);border-radius:99px;padding:5px 8px;color:#a7b7ab;font-size:8px;white-space:nowrap}
+    .empty-chart{height:195px;border:1px dashed rgba(207,235,211,.15);border-radius:13px;display:grid;place-items:center;text-align:center;padding:18px;background:radial-gradient(ellipse at 50% 130%,rgba(97,197,141,.1),transparent 55%),#0d201a}.chart-mark{height:52px;width:min(255px,80%);display:flex;align-items:flex-end;justify-content:center;gap:10px;border-bottom:1px solid rgba(207,235,211,.17);margin:0 auto 12px}.chart-mark i{display:block;width:26px;border-radius:7px 7px 0 0;background:linear-gradient(180deg,rgba(201,244,106,.35),rgba(97,197,141,.08));border:1px solid rgba(201,244,106,.1);border-bottom:0}.chart-mark i:nth-child(1){height:25%}.chart-mark i:nth-child(2){height:42%}.chart-mark i:nth-child(3){height:34%}.chart-mark i:nth-child(4){height:65%}.chart-mark i:nth-child(5){height:78%}.empty-chart strong{display:block;font-size:10px}.empty-chart p{max-width:350px;margin:4px auto 0;color:var(--muted);font-size:9px}
+    .integration-list{display:grid;gap:8px}.integration{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:9px;padding:10px;border-radius:12px;background:var(--panel2);border:1px solid rgba(207,235,211,.07)}.integration-icon{width:28px;height:28px;border-radius:9px;background:rgba(255,255,255,.05);display:grid;place-items:center;color:#bad77f;font-size:12px}.integration strong{display:block;font-size:9px}.integration small{display:block;color:var(--muted);font-size:8px;margin-top:2px}.integration-status{color:var(--amber);font-size:8px;font-weight:750;text-align:right}
+    .table-wrap{overflow-x:auto}.orders{width:100%;border-collapse:collapse;text-align:left;min-width:500px}.orders th{font-size:8px;color:#8ea598;text-transform:uppercase;letter-spacing:1px;font-weight:750;padding:0 8px 10px}.orders td{border-top:1px solid var(--line);padding:10px 8px;font-size:9px;color:#a3b5a8}.orders .empty{text-align:center;padding:27px 10px;color:var(--muted)}
+    .next-steps{margin-top:13px;border-color:rgba(201,244,106,.18);background:linear-gradient(130deg,rgba(201,244,106,.055),var(--panel))}.next-steps ol{margin:12px 0 0;padding-left:18px;color:#bfd0c3;font-size:9px;line-height:1.8}.next-steps li::marker{color:var(--lime)}.footer{display:flex;justify-content:space-between;gap:15px;color:#74897c;font-size:8px;margin-top:22px;padding-top:12px;border-top:1px solid var(--line)}
+    @media(max-width:800px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}.hero{align-items:flex-start;flex-direction:column;padding-top:27px}.date-pill{align-self:flex-start}}
+    @media(max-width:480px){.wrap{width:min(100% - 24px,1220px);padding-top:15px}.topbar{padding-bottom:15px}.status-pill{font-size:0;padding:8px}.status-pill .dot{margin:0}.brand{font-size:13px}.metrics{gap:8px}.metric{padding:12px;min-height:117px}.metric-value{font-size:25px}.panel{padding:13px}.notice{padding:13px}.footer{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="NutriAI, abrir aplicação"><span class="mark">N</span><span>NutriAI<small>Console de gestão</small></span></a>
+      <div class="top-actions"><span class="status-pill"><i class="dot"></i> A preparar integrações</span><a class="back-link" href="/">Abrir aplicação ↗</a></div>
+    </header>
+
+    <section class="hero">
+      <div><div class="eyebrow">Administração · visão geral</div><h1>O teu produto, num só painel.</h1><p>Utilização, compras e receita vão aparecer aqui quando a aplicação tiver contas online e um sistema de pagamentos ligado.</p></div>
+      <div class="date-pill">NutriAI · Portugal · EUR</div>
+    </section>
+
+    <section class="notice" aria-live="polite"><span class="notice-icon">!</span><div><strong>As métricas globais ainda não estão disponíveis</strong><p>Neste momento, os perfis e registos ficam no navegador de cada pessoa e a aplicação não tem checkout. Por isso, este painel não mostra contagens ou valores fictícios.</p></div></section>
+
+    <section class="metrics" aria-label="Indicadores do negócio">
+      <article class="metric"><div class="metric-label"><span>Utilizadores activos · 7 dias</span><span class="metric-icon">◉</span></div><div class="metric-value pending">—</div><div class="metric-foot">Precisa de contas e actividade sincronizada.</div></article>
+      <article class="metric"><div class="metric-label"><span>Compras confirmadas</span><span class="metric-icon">↗</span></div><div class="metric-value pending">—</div><div class="metric-foot">Aguardando integração de pagamentos.</div></article>
+      <article class="metric"><div class="metric-label"><span>Receita bruta · EUR</span><span class="metric-icon">€</span></div><div class="metric-value pending">—</div><div class="metric-foot">Será calculada a partir de pagamentos confirmados.</div></article>
+      <article class="metric"><div class="metric-label"><span>Conversão em compra</span><span class="metric-icon">%</span></div><div class="metric-value pending">—</div><div class="metric-foot">Precisa de utilizadores e eventos de checkout.</div></article>
+    </section>
+
+    <div class="grid">
+      <section class="panel"><div class="panel-head"><div><h2>Actividade e compras</h2><p>Tendência diária, utilizadores e transacções</p></div><span class="tag">Últimos 30 dias</span></div><div class="empty-chart"><div><div class="chart-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><strong>O gráfico será preenchido com dados reais</strong><p>Quando as contas, a base de dados e o checkout estiverem ligados, este espaço mostra a evolução sem misturar visitas com utilizadores activos.</p></div></div></section>
+      <section class="panel"><div class="panel-head"><div><h2>Integrações necessárias</h2><p>Estado actual da aplicação</p></div><span class="tag">Configuração</span></div><div class="integration-list">
+        <div class="integration"><span class="integration-icon">◎</span><div><strong>Contas e autenticação</strong><small>Os perfis estão guardados localmente.</small></div><span class="integration-status">Por ligar</span></div>
+        <div class="integration"><span class="integration-icon">▤</span><div><strong>Base de dados</strong><small>Sem dados centralizados de utilizadores.</small></div><span class="integration-status">Por ligar</span></div>
+        <div class="integration"><span class="integration-icon">€</span><div><strong>Pagamentos e compras</strong><small>Não existe checkout nem webhook activo.</small></div><span class="integration-status">Por ligar</span></div>
+        <div class="integration"><span class="integration-icon">⌁</span><div><strong>Eventos de utilização</strong><small>Sem registo global de actividade.</small></div><span class="integration-status">Por ligar</span></div>
+      </div></section>
+    </div>
+
+    <section class="panel" style="margin-top:13px"><div class="panel-head"><div><h2>Últimas compras</h2><p>Estado, data, plano e valor recebido</p></div><span class="tag">Sem checkout ligado</span></div><div class="table-wrap"><table class="orders"><thead><tr><th>Referência</th><th>Data</th><th>Plano</th><th>Estado</th><th>Valor</th></tr></thead><tbody><tr><td class="empty" colspan="5">Ainda não há uma fonte de compras ligada à NutriAI.</td></tr></tbody></table></div></section>
+
+    <section class="panel next-steps"><div class="panel-head"><div><h2>Para activar os números reais</h2><p>As integrações também permitem sincronizar registos entre dispositivos.</p></div><span class="tag">Próxima fase</span></div><ol><li>Escolher o sistema de pagamentos usado para vender a subscrição.</li><li>Ligar contas e uma base de dados com acesso protegido por utilizador.</li><li>Registar compras através de webhooks e actividade através de eventos anónimos.</li></ol></section>
+
+    <footer class="footer"><span>NutriAI Admin · Pré-configuração</span><span>Os dados pessoais de saúde não são apresentados neste painel.</span></footer>
+  </main>
+</body>
+</html>

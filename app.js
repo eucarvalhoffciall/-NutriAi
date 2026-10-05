@@ -9,6 +9,7 @@
   var toastTimer = null;
   var viewDate = dateKey(new Date());
   var pendingPhoto = "";
+  var mealAnalysisSequence = 0;
 
   var recipes = [
     { id: "sopa", name: "Sopa de legumes", icon: "🥣", text: "Uma ideia simples para aproveitar legumes da época.", ingredients: ["cenoura", "curgete", "cebola", "batata", "azeite"] },
@@ -208,7 +209,7 @@
     return pageHeading("Diário alimentar", "As tuas refeições.", "Regista o que comeste e acompanha a soma dos valores que introduziste.", "<div class='heading-actions'>" + dateActions() + "<button class='button' type='button' data-action='add-meal'>＋ Registar refeição</button></div>") +
       "<div class='stats-row'><div class='stat-box'><span>Energia registada</span><strong>" + whole(totals.calories) + " kcal</strong><small>Meta: " + (state.profile.calorieGoal ? whole(state.profile.calorieGoal) + " kcal" : "por definir") + "</small></div><div class='stat-box'><span>Refeições</span><strong>" + meals.length + "</strong><small>neste dia</small></div><div class='stat-box'><span>Proteína registada</span><strong>" + decimal(totals.protein) + " g</strong><small>valor informado por ti</small></div></div>" +
       "<section class='card'>" + cardHeader("Registos de " + formatDate(viewDate, { day: "numeric", month: "long" }), "Os valores são guardados neste navegador.", "") + list + "</section>" +
-      "<p class='help-copy'>A fotografia pode ser anexada ao registo. Nesta demonstração, os alimentos e valores nutricionais são inseridos manualmente e não são identificados por IA.</p>";
+      "<p class='help-copy'>Podes identificar uma refeição por fotografia ou pedir uma estimativa à IA a partir da descrição escrita. Revê os valores antes de guardar; as estimativas podem não corresponder exactamente à porção servida.</p>";
   }
 
   function renderProgress() {
@@ -288,8 +289,8 @@
       "<label class='field'>Hidratos de carbono (g)<input name='carbsGoal' type='number' min='0' max='1500' value='" + esc(profile.carbsGoal || 0) + "'></label>" +
       "<label class='field'>Gordura (g)<input name='fatGoal' type='number' min='0' max='1000' value='" + esc(profile.fatGoal || 0) + "'></label>" +
       "<div class='span-2'><button class='button' type='submit'>Guardar alterações</button></div></form>" +
-      "<div class='privacy-callout'><span>◆</span><p>Sexo, atividade e objetivo ficam no perfil, mas ainda não são usados para calcular metas nesta demonstração. A NutriAI não calcula necessidades clínicas nem substitui aconselhamento profissional.</p></div></section>" +
-      "<section class='card' style='margin-top:15px'>" + cardHeader("Os teus dados", "Exporta uma cópia ou apaga o conteúdo local", "") + "<p class='help-copy'>A demonstração não tem conta online, palavras-passe ou sincronização na nuvem. Ao limpar os dados do navegador, os registos podem desaparecer.</p><div class='habit-actions'><button class='button secondary' type='button' data-action='export'>Exportar os meus dados</button><button class='button secondary' type='button' data-action='clear-data' style='color:#a34444'>Apagar registos deste dispositivo</button></div></section>";
+      "<div class='privacy-callout'><span>◆</span><p>Sexo, atividade e objetivo ficam no perfil, mas ainda não são usados para calcular metas. A NutriAI não calcula necessidades clínicas nem substitui aconselhamento profissional.</p></div></section>" +
+      "<section class='card' style='margin-top:15px'>" + cardHeader("Os teus dados", "Exporta uma cópia ou apaga o conteúdo local", "") + "<p class='help-copy'>A aplicação não tem conta online nem sincronização na nuvem. Os registos ficam neste navegador; ao limpar os dados do dispositivo, podem desaparecer.</p><div class='habit-actions'><button class='button secondary' type='button' data-action='export'>Exportar os meus dados</button><button class='button secondary' type='button' data-action='clear-data' style='color:#a34444'>Apagar registos deste dispositivo</button></div></section>";
   }
 
   function renderPage() {
@@ -397,12 +398,16 @@
 
   function openMealDialog() {
     var form = document.getElementById("meal-form");
+    mealAnalysisSequence += 1;
     form.reset();
+    document.getElementById("estimate-meal-ai").disabled = false;
+    document.getElementById("estimate-meal-ai").textContent = "Estimar com IA";
     form.elements.date.value = viewDate;
     form.elements.photoData.value = "";
     pendingPhoto = "";
     document.getElementById("photo-preview").hidden = true;
     document.getElementById("photo-label").textContent = "Tirar ou escolher uma fotografia";
+    setMealAIStatus("", "");
     if (!mealDialog.open) mealDialog.showModal();
   }
 
@@ -501,6 +506,69 @@
     });
   }
 
+  function setMealAIStatus(message, kind) {
+    var status = document.getElementById("meal-ai-status");
+    if (!status) return;
+    status.textContent = message || "";
+    status.hidden = !message;
+    status.className = "photo-analysis-status" + (kind ? " is-" + kind : "");
+  }
+
+  function fillNutritionFields(result) {
+    var form = document.getElementById("meal-form");
+    if (result.title) form.elements.title.value = result.title;
+    if (result.portion) form.elements.portion.value = result.portion;
+    form.elements.calories.value = String(Math.round(number(result.calories)));
+    form.elements.protein.value = number(result.protein).toFixed(1);
+    form.elements.carbs.value = number(result.carbs).toFixed(1);
+    form.elements.fat.value = number(result.fat).toFixed(1);
+  }
+
+  function runMealAnalysis(imageData, requestId) {
+    var form = document.getElementById("meal-form");
+    var button = document.getElementById("estimate-meal-ai");
+    var originalButtonText = "Estimar com IA";
+    var description = String(form.elements.title.value || "").trim().slice(0, 300);
+    var portion = String(form.elements.portion.value || "").trim().slice(0, 80);
+    button.disabled = true;
+    button.textContent = "A estimar…";
+    setMealAIStatus(imageData ? "A analisar a fotografia e a estimar a porção…" : "A estimar os valores nutricionais…", "loading");
+
+    return fetch("/api/analyze-meal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ image: imageData || "", description: description, portion: portion })
+    }).then(function (response) {
+      return response.json().catch(function () { return {}; }).then(function (result) {
+        if (!response.ok) throw new Error(result.error || "A análise de IA não está disponível. Tenta novamente.");
+        return result;
+      });
+    }).then(function (result) {
+      if (requestId !== mealAnalysisSequence) return;
+      if (!result.foodRecognized) {
+        setMealAIStatus(result.note || "Não consegui identificar uma refeição. Tenta uma fotografia mais nítida ou escreve o que comeste.", "error");
+        return;
+      }
+      fillNutritionFields(result);
+      var confidence = { low: "baixa", medium: "média", high: "alta" }[result.confidence] || "média";
+      var items = Array.isArray(result.items) ? result.items.slice(0, 4).map(function (item) { return item.name; }).filter(Boolean) : [];
+      var itemCount = Array.isArray(result.items) ? result.items.length : 0;
+      var summary = "A IA identificou " + (result.title || "a refeição") + ": cerca de " + whole(result.calories) + " kcal para " + (result.portion || "a porção estimada") + ". Confiança " + confidence + ".";
+      if (items.length) summary += " Inclui " + items.join(", ") + (itemCount > items.length ? " e outros ingredientes" : "") + ".";
+      if (result.note) summary += " " + result.note;
+      summary += " Confirma e ajusta os campos antes de guardar.";
+      setMealAIStatus(summary, "success");
+    }).catch(function (error) {
+      if (requestId !== mealAnalysisSequence) return;
+      setMealAIStatus(error.message || "Não foi possível analisar agora. Podes preencher os valores manualmente.", "error");
+    }).finally(function () {
+      if (requestId === mealAnalysisSequence) {
+        button.disabled = false;
+        button.textContent = originalButtonText;
+      }
+    });
+  }
+
   function handlePhotoChange(event) {
     var file = event.target.files && event.target.files[0];
     if (!file) return;
@@ -508,17 +576,45 @@
       showToast("Escolhe um ficheiro de imagem.");
       return;
     }
+    var requestId = ++mealAnalysisSequence;
+    if (file.size > 12000000) {
+      showToast("A fotografia é demasiado grande. Escolhe uma imagem com menos de 12 MB.");
+      document.getElementById("estimate-meal-ai").disabled = false;
+      document.getElementById("estimate-meal-ai").textContent = "Estimar com IA";
+      setMealAIStatus("A fotografia excede o limite de 12 MB. Escolhe uma imagem mais pequena.", "error");
+      event.target.value = "";
+      return;
+    }
+    document.getElementById("photo-label").textContent = "A preparar fotografia…";
+    setMealAIStatus("A preparar a fotografia para análise…", "loading");
     compressImage(file).then(function (dataUrl) {
+      if (requestId !== mealAnalysisSequence) return;
       pendingPhoto = dataUrl;
       document.querySelector("#meal-form [name='photoData']").value = dataUrl;
       var preview = document.getElementById("photo-preview");
       preview.src = dataUrl;
       preview.hidden = false;
-      document.getElementById("photo-label").textContent = "Fotografia anexada ao registo";
-      showToast("A fotografia fica guardada apenas neste navegador.");
+      document.getElementById("photo-label").textContent = "Fotografia pronta para analisar";
+      runMealAnalysis(dataUrl, requestId);
     }).catch(function () {
+      if (requestId !== mealAnalysisSequence) return;
+      document.getElementById("photo-label").textContent = "Não foi possível preparar a fotografia";
+      document.getElementById("estimate-meal-ai").disabled = false;
+      document.getElementById("estimate-meal-ai").textContent = "Estimar com IA";
+      setMealAIStatus("Não foi possível preparar a fotografia. Tenta outra imagem ou preenche os dados manualmente.", "error");
       showToast("Não foi possível preparar essa fotografia.");
     });
+  }
+
+  function estimateMealFromInput() {
+    var description = String(document.getElementById("meal-description").value || "").trim();
+    if (!pendingPhoto && !description) {
+      showToast("Tira uma fotografia ou escreve o que comeste primeiro.");
+      document.getElementById("meal-description").focus();
+      return;
+    }
+    var requestId = ++mealAnalysisSequence;
+    runMealAnalysis(pendingPhoto, requestId);
   }
 
   function lookupBarcode() {
@@ -698,7 +794,7 @@
   }
 
   function exportData() {
-    var payload = { exportedAt: new Date().toISOString(), application: "NutriAI — demonstração local", data: state };
+    var payload = { exportedAt: new Date().toISOString(), application: "NutriAI", data: state };
     var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     var url = URL.createObjectURL(blob);
     var link = document.createElement("a");
@@ -785,6 +881,7 @@
   document.getElementById("profile-form").addEventListener("submit", handleProfileSubmit);
   document.getElementById("meal-form").addEventListener("submit", handleMealSubmit);
   document.getElementById("meal-photo").addEventListener("change", handlePhotoChange);
+  document.getElementById("estimate-meal-ai").addEventListener("click", estimateMealFromInput);
   document.getElementById("lookup-barcode").addEventListener("click", lookupBarcode);
   document.getElementById("dictate-meal").addEventListener("click", startDictation);
   document.getElementById("edit-profile").addEventListener("click", openProfileDialog);

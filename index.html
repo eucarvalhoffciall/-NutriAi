@@ -145,6 +145,7 @@
         <img id="photo-preview" alt="Pré-visualização da fotografia da refeição" hidden>
       </label>
       <div class="photo-analysis-status" id="meal-ai-status" role="status" aria-live="polite" hidden></div>
+      <section class="ai-result-panel" id="meal-ai-result" aria-live="polite" hidden></section>
       <div class="form-grid">
         <label class="field span-2">O que comeste?
           <div class="input-with-button"><input name="title" id="meal-description" maxlength="100" required placeholder="Ex.: sopa de legumes e pão"><button class="dictate-button" id="dictate-meal" type="button" title="Ditado por voz">🎙</button></div>
@@ -174,6 +175,9 @@
       </div>
       <p class="help-copy">As quantidades e os valores nutricionais são estimativas visuais, não medições exactas. Confirma e edita os campos antes de guardar. O ditado é processado pelo serviço do navegador.</p>
       <input type="hidden" name="photoData">
+      <input type="hidden" name="analysisConfidence">
+      <input type="hidden" name="analysisItems" value="[]">
+      <input type="hidden" name="analysisNote">
       <button class="button primary wide" type="submit">Guardar refeição <span>→</span></button>
     </form>
   </dialog>

@@ -63,7 +63,7 @@
   }
 
   function formatDate(key, options) {
-    return parseDate(key).toLocaleDateString("pt-PT", options || { day: "numeric", month: "long", year: "numeric" });
+    return parseDate(key).toLocaleDateString(currentLanguage(), options || { day: "numeric", month: "long", year: "numeric" });
   }
 
   function esc(value) {
@@ -77,12 +77,87 @@
     return Number.isFinite(result) ? result : 0;
   }
 
+  function currentLanguage() {
+    return state.profile && state.profile.language === "pt-BR" ? "pt-BR" : "pt-PT";
+  }
+
+  function currentCountry() {
+    return state.profile && state.profile.country === "BR" ? "BR" : "PT";
+  }
+
+  function localizeText(value) {
+    var text = String(value == null ? "" : value);
+    if (currentLanguage() !== "pt-BR") return text;
+    var replacements = [
+      [/Pequeno-almoço/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Café da manhã" : "café da manhã"; }],
+      [/hidratos de carbono/gi, "carboidratos"],
+      [/fotografias/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Fotos" : "fotos"; }],
+      [/fotografia/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Foto" : "foto"; }],
+      [/registados/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Registrados" : "registrados"; }],
+      [/registadas/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Registradas" : "registradas"; }],
+      [/registada/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Registrada" : "registrada"; }],
+      [/registado/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Registrado" : "registrado"; }],
+      [/registos/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Registros" : "registros"; }],
+      [/registo/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Registro" : "registro"; }],
+      [/registar/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Registrar" : "registrar"; }],
+      [/regista/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Registre" : "registre"; }],
+      [/\bGuarda\b/g, "Salve"], [/\bguarda\b/g, "salve"],
+      [/guardadas/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Salvas" : "salvas"; }],
+      [/guardados/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Salvos" : "salvos"; }],
+      [/guardada/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Salva" : "salva"; }],
+      [/guardado/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Salvo" : "salvo"; }],
+      [/Guardar/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Salvar" : "salvar"; }],
+      [/telemóvel/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Celular" : "celular"; }],
+      [/ficheiros/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Arquivos" : "arquivos"; }],
+      [/ficheiro/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Arquivo" : "arquivo"; }],
+      [/equipa/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Equipe" : "equipe"; }],
+      [/curgete/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Abobrinha" : "abobrinha"; }],
+      [/frigorífico/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Geladeira" : "geladeira"; }],
+      [/taça/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Tigela" : "tigela"; }],
+      [/neste dispositivo/gi, "neste aparelho"],
+      [/O teu\b/gi, "Seu"], [/A tua\b/gi, "A sua"],
+      [/Os teus\b/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Seus" : "seus"; }],
+      [/As tuas\b/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "As suas" : "as suas"; }],
+      [/\bteus\b/gi, "seus"], [/\btuas\b/gi, "suas"], [/\bteu\b/gi, "seu"], [/\btua\b/gi, "sua"],
+      [/\bpara ti\b/gi, "para você"], [/\bpor ti\b/gi, "por você"],
+      [/\bpodes\b/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Você pode" : "você pode"; }],
+      [/\bqueres\b/gi, function (m) { return m.charAt(0) === m.charAt(0).toUpperCase() ? "Você quer" : "você quer"; }],
+      [/\btens\b/gi, "você tem"], [/\bcomeste\b/gi, "comeu"],
+      [/\bpretendes\b/gi, "pretende"], [/\bintroduziste\b/gi, "informou"],
+      [/\bTira\b/g, "Tire"], [/\btira\b/g, "tire"], [/\bConfirma\b/g, "Confirme"], [/\bconfirma\b/g, "confirme"],
+      [/\bAdiciona\b/g, "Adicione"], [/\badiciona\b/g, "adicione"], [/\bDefine\b/g, "Defina"], [/\bdefine\b/g, "defina"],
+      [/\bExporta\b/g, "Exporte"], [/\bexporta\b/g, "exporte"], [/\bAbre\b/g, "Abra"], [/\babre\b/g, "abra"],
+      [/\bIntroduz\b/g, "Informe"], [/\bintroduz\b/g, "informe"], [/\bAtingiste\b/g, "Você atingiu"], [/\batingiste\b/g, "você atingiu"]
+    ];
+    replacements.forEach(function (entry) { text = text.replace(entry[0], entry[1]); });
+    return text;
+  }
+
+  function applyLanguage(root) {
+    var language = currentLanguage();
+    document.documentElement.lang = language;
+    if (language !== "pt-BR" || !root) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    var node;
+    while ((node = walker.nextNode())) {
+      var parent = node.parentElement;
+      if (!parent || parent.closest("#user-name-top, .meal-name, .shopping-item")) continue;
+      node.nodeValue = localizeText(node.nodeValue);
+    }
+    root.querySelectorAll("[placeholder], [aria-label], [title], [alt]").forEach(function (element) {
+      ["placeholder", "aria-label", "title", "alt"].forEach(function (attribute) {
+        var value = element.getAttribute(attribute);
+        if (value) element.setAttribute(attribute, localizeText(value));
+      });
+    });
+  }
+
   function whole(value) {
-    return Math.round(number(value)).toLocaleString("pt-PT");
+    return Math.round(number(value)).toLocaleString(currentLanguage());
   }
 
   function decimal(value) {
-    return number(value).toLocaleString("pt-PT", { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+    return number(value).toLocaleString(currentLanguage(), { minimumFractionDigits: 0, maximumFractionDigits: 1 });
   }
 
   function clampPercent(value, goal) {
@@ -116,7 +191,7 @@
 
   function showToast(message) {
     var toast = document.getElementById("toast");
-    toast.textContent = message;
+    toast.textContent = localizeText(message);
     toast.classList.add("show");
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 3000);
@@ -155,7 +230,7 @@
   function mealRow(meal, removable) {
     var safeImage = typeof meal.photoData === "string" && meal.photoData.indexOf("data:image/") === 0;
     var icon = safeImage ? "<img class='meal-thumb' alt='' src='" + meal.photoData + "'>" : esc(mealIcon(meal.category));
-    return "<div class='meal-row'><div class='meal-icon'>" + icon + "</div><div class='meal-name'><strong>" + esc(meal.title) + "</strong><span>" + esc(meal.category || "Refeição") + (meal.portion ? " · " + esc(meal.portion) : "") + (meal.time ? " · " + esc(meal.time) : "") + "</span></div><div class='meal-kcal'>" + whole(meal.calories) + " kcal" + (removable ? "<button class='icon-action' type='button' data-action='delete-meal' data-id='" + esc(meal.id) + "' aria-label='Apagar registo'>×</button>" : "") + "</div></div>";
+    return "<div class='meal-row'><div class='meal-icon'>" + icon + "</div><div class='meal-name'><strong>" + esc(meal.title) + "</strong><span>" + esc(localizeText(meal.category || "Refeição")) + (meal.portion ? " · " + esc(meal.portion) : "") + (meal.time ? " · " + esc(meal.time) : "") + "</span></div><div class='meal-kcal'>" + whole(meal.calories) + " kcal" + (removable ? "<button class='icon-action' type='button' data-action='delete-meal' data-id='" + esc(meal.id) + "' aria-label='Apagar registo'>×</button>" : "") + "</div></div>";
   }
 
   function dateActions() {
@@ -197,7 +272,7 @@
       "<section class='card'>" + cardHeader("Hidratação", "Registos de hoje", "<div class='water-glass' style='--water-fill:" + clampPercent(water, waterGoal) + "%'><span>" + clampPercent(water, waterGoal) + "%</span></div>") +
       "<div class='side-stat'><div><strong>" + whole(water) + " <span>ml</span></strong><span>Meta definida: " + whole(waterGoal) + " ml</span></div></div><div class='habit-actions'><button class='button small' type='button' data-action='add-water' data-amount='250'>＋ 250 ml</button><button class='button secondary small' type='button' data-action='add-water' data-amount='500'>＋ 500 ml</button></div></section>" +
       "<section class='card streak-card'>" + cardHeader("Dias com registos", "", "<div class='streak-icon'>✦</div>") + "<div class='side-stat'><strong>" + streak + " <span>" + (streak === 1 ? "dia" : "dias") + "</span></strong><span>Sequência atual de dias com refeições registadas</span></div></section>" +
-      "<section class='card'>" + cardHeader("Jejum", "Temporizador e histórico", "") + (state.fast ? "<div class='fast-clock' data-fast-clock>--:--:--</div><p class='card-subtitle'>Objetivo: " + decimal(state.fast.targetHours) + " h · iniciado " + esc(new Date(state.fast.startedAt).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })) + "</p><div class='habit-actions'><button class='button secondary small' type='button' data-page='habits'>Abrir temporizador →</button></div>" : "<div class='empty-state'>Ainda não tens um temporizador ativo.</div><div class='habit-actions'><button class='button secondary small' type='button' data-page='habits'>Ver hábitos →</button></div>") + "</section>" +
+      "<section class='card'>" + cardHeader("Jejum", "Temporizador e histórico", "") + (state.fast ? "<div class='fast-clock' data-fast-clock>--:--:--</div><p class='card-subtitle'>Objetivo: " + decimal(state.fast.targetHours) + " h · iniciado " + esc(new Date(state.fast.startedAt).toLocaleTimeString(currentLanguage(), { hour: "2-digit", minute: "2-digit" })) + "</p><div class='habit-actions'><button class='button secondary small' type='button' data-page='habits'>Abrir temporizador →</button></div>" : "<div class='empty-state'>Ainda não tens um temporizador ativo.</div><div class='habit-actions'><button class='button secondary small' type='button' data-page='habits'>Ver hábitos →</button></div>") + "</section>" +
       "<section class='card suggestion'>" + cardHeader("Resumo das metas", "Informação do teu perfil", "") + "<p>" + esc(suggestionText) + "</p></section>" +
       "</div></div>";
   }
@@ -272,9 +347,13 @@
     var sexOptions = option("", "Prefiro não indicar", profile.sex) + option("feminino", "Feminino", profile.sex) + option("masculino", "Masculino", profile.sex);
     var activityOptions = option("", "Prefiro não indicar", profile.activityLevel) + option("baixo", "Pouco ativo", profile.activityLevel) + option("leve", "Atividade leve", profile.activityLevel) + option("moderado", "Atividade moderada", profile.activityLevel) + option("alto", "Muito ativo", profile.activityLevel);
     var goalOptions = option("", "Escolher mais tarde", profile.goal) + option("perder", "Perder peso", profile.goal) + option("manter", "Manter o peso", profile.goal) + option("ganhar", "Aumentar o peso", profile.goal) + option("habitos", "Acompanhar hábitos", profile.goal);
+    var languageOptions = option("pt-PT", "Português (Portugal)", profile.language || "pt-PT") + option("pt-BR", "Português (Brasil)", profile.language || "pt-PT");
+    var countryOptions = option("PT", "Portugal", profile.country || "PT") + option("BR", "Brasil", profile.country || "PT");
     return pageHeading("Personalização", "Perfil e metas.", "Atualiza os dados que usas para organizar os teus registos.", "") +
       "<section class='card settings-panel'>" + cardHeader("Os teus dados", "Guardados localmente neste navegador", "") +
       "<form class='form-grid' data-form='profile'>" +
+      "<label class='field'>Idioma preferido<select name='language'>" + languageOptions + "</select></label>" +
+      "<label class='field'>País/região de referência<select name='country'>" + countryOptions + "</select></label>" +
       "<label class='field span-2'>Nome<input name='name' maxlength='60' required value='" + esc(profile.name) + "'></label>" +
       "<label class='field'>Idade<input name='age' type='number' min='16' max='110' value='" + esc(profile.age || "") + "'></label>" +
       "<label class='field'>Altura (cm)<input name='height' type='number' min='100' max='230' value='" + esc(profile.height || "") + "'></label>" +
@@ -301,6 +380,7 @@
     var page = state.currentPage || "home";
     var renderers = { home: renderHome, meals: renderMeals, progress: renderProgress, habits: renderHabits, recipes: renderRecipes, settings: renderSettings };
     pageContent.innerHTML = (renderers[page] || renderHome)();
+    applyLanguage(document.body);
     if (page === "progress") drawWeightChart();
     updateFastClock();
   }
@@ -378,15 +458,16 @@
       ctx.fill();
       ctx.fillStyle = text;
       ctx.textAlign = index === 0 ? "left" : index === points.length - 1 ? "right" : "center";
-      ctx.fillText(parseDate(point.entry.date).toLocaleDateString("pt-PT", { day: "numeric", month: "short" }), point.x, height - 8);
+      ctx.fillText(parseDate(point.entry.date).toLocaleDateString(currentLanguage(), { day: "numeric", month: "short" }), point.x, height - 8);
     });
   }
 
   function fillProfileForm() {
     var form = document.getElementById("profile-form");
     var profile = state.profile || {};
-    ["name", "age", "height", "sex", "activityLevel", "goal", "weight", "targetWeight", "calorieGoal", "waterGoal", "proteinGoal", "carbsGoal", "fatGoal"].forEach(function (field) {
-      if (form.elements[field]) form.elements[field].value = profile[field] == null ? (field === "waterGoal" ? 2000 : field.indexOf("Goal") >= 0 && field !== "calorieGoal" ? 0 : "") : profile[field];
+    ["language", "country", "name", "age", "height", "sex", "activityLevel", "goal", "weight", "targetWeight", "calorieGoal", "waterGoal", "proteinGoal", "carbsGoal", "fatGoal"].forEach(function (field) {
+      var defaults = { language: "pt-PT", country: "PT", waterGoal: 2000 };
+      if (form.elements[field]) form.elements[field].value = profile[field] == null ? (Object.prototype.hasOwnProperty.call(defaults, field) ? defaults[field] : field.indexOf("Goal") >= 0 && field !== "calorieGoal" ? 0 : "") : profile[field];
     });
     document.getElementById("profile-title").textContent = state.profile ? "Atualiza o teu perfil." : "Vamos preparar o teu perfil.";
   }
@@ -420,7 +501,10 @@
     var form = event.currentTarget;
     var data = new FormData(form);
     var oldWeight = state.profile ? number(state.profile.weight) : 0;
+    var oldLanguage = currentLanguage();
     state.profile = {
+      language: String(data.get("language") || "pt-PT"),
+      country: String(data.get("country") || "PT"),
       name: String(data.get("name") || "").trim(),
       age: number(data.get("age")) || "",
       height: number(data.get("height")) || "",
@@ -439,6 +523,7 @@
       state.weights.push({ id: makeId(), date: dateKey(new Date()), weight: state.profile.weight });
     }
     saveState();
+    if (oldLanguage !== currentLanguage()) return window.location.reload();
     closeDialog(profileDialog);
     renderPage();
     showToast("Perfil guardado neste dispositivo.");
@@ -458,7 +543,7 @@
       title: String(data.get("title") || "").trim(),
       category: String(data.get("category") || "Outro"),
       date: String(data.get("date") || dateKey(new Date())),
-      time: new Date().toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }),
+      time: new Date().toLocaleTimeString(currentLanguage(), { hour: "2-digit", minute: "2-digit" }),
       portion: String(data.get("portion") || "").trim(),
       calories: calories,
       protein: number(data.get("protein")),
@@ -509,7 +594,7 @@
   function setMealAIStatus(message, kind) {
     var status = document.getElementById("meal-ai-status");
     if (!status) return;
-    status.textContent = message || "";
+    status.textContent = localizeText(message || "");
     status.hidden = !message;
     status.className = "photo-analysis-status" + (kind ? " is-" + kind : "");
   }
@@ -537,7 +622,7 @@
     return fetch("/api/analyze-meal", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ image: imageData || "", description: description, portion: portion })
+      body: JSON.stringify({ image: imageData || "", description: description, portion: portion, language: currentLanguage(), country: currentCountry() })
     }).then(function (response) {
       return response.json().catch(function () { return {}; }).then(function (result) {
         if (!response.ok) throw new Error(result.error || "A análise de IA não está disponível. Tenta novamente.");
@@ -667,7 +752,7 @@
       return;
     }
     var recognition = new SpeechRecognition();
-    recognition.lang = "pt-PT";
+    recognition.lang = currentLanguage();
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognition.onstart = function () { showToast("Ditado iniciado. Fala agora."); };
@@ -716,7 +801,10 @@
     }
     if (kind === "profile") {
       var oldWeight = number(state.profile.weight);
+      var oldLanguage = currentLanguage();
       state.profile = {
+        language: String(data.get("language") || "pt-PT"),
+        country: String(data.get("country") || "PT"),
         name: String(data.get("name") || "").trim(),
         age: number(data.get("age")) || "",
         height: number(data.get("height")) || "",
@@ -733,6 +821,7 @@
       };
       if (oldWeight !== state.profile.weight) state.weights.push({ id: makeId(), date: dateKey(new Date()), weight: state.profile.weight });
       saveState();
+      if (oldLanguage !== currentLanguage()) return window.location.reload();
       renderPage();
       return showToast("As metas foram atualizadas.");
     }

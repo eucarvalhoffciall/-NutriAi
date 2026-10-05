@@ -1,0 +1,11 @@
+{
+  "name": "nutriai-mvp",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "ai": "^7.0.0",
+    "zod": "^4.0.0"
+  }
+}

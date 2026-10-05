@@ -185,6 +185,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .photo-drop strong{font-size:11px}
 .photo-drop small{font-size:9px;color:var(--muted)}
 .photo-drop img{max-width:min(100%,280px);max-height:150px;object-fit:cover;border-radius:12px;margin-top:8px}
+.photo-analysis-status{margin:-5px 0 13px;padding:11px 12px;border:1px solid #dbe8de;border-radius:12px;background:#f4faf5;color:#315d40;font-size:11px;line-height:1.5}
+.photo-analysis-status[hidden]{display:none}
+.photo-analysis-status.is-loading{color:#466b54}
+.photo-analysis-status.is-success{border-color:#b8dcc0;background:#eff9f1}
+.photo-analysis-status.is-error{border-color:#efd2c9;background:#fff7f3;color:#8a4937}
+.estimate-ai-button{width:100%;margin-top:8px;min-height:39px}
 .barcode-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;margin:0 0 4px}
 .barcode-button{min-height:42px;white-space:nowrap}
 .barcode-note{margin:0 0 12px;font-size:9px}

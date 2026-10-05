@@ -155,7 +155,7 @@ module.exports = async function analyzeMeal(req, res) {
     const parts = [];
     let instruction = image
       ? "Identifica os alimentos visíveis e estima a quantidade que está servida."
-      : "Estima a informação nutricional da refeição descrita para a porção indicada. Se a quantidade não foi indicada, usa uma porção habitual em Portugal e identifica essa suposição.";
+      : "Estima a informação nutricional da refeição descrita para a porção indicada. Se a quantidade não foi indicada, usa uma porção habitual em " + foodRegion + " e identifica essa suposição.";
     if (description) instruction += " Descrição da refeição fornecida pela pessoa: " + description;
     if (portionHint) instruction += " Porção indicada pela pessoa: " + portionHint;
     parts.push({ type: "text", text: instruction });

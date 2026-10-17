@@ -5,10 +5,10 @@ Aplicação web progressiva para registo alimentar, acompanhamento de hábitos e
 ## Executar localmente
 
 1. Instala as dependências com `npm install`.
-2. Para usar a análise por IA fora da Vercel, define `AI_GATEWAY_API_KEY` apenas no ambiente do servidor.
+2. Define `OPENAI_API_KEY` apenas no servidor para a análise de refeições pela OpenAI. Sem esta variável, mantém-se o AI Gateway. O assistente de conversa continua a usar o Gateway.
 3. Serve esta pasta por HTTP e abre `http://localhost:8000/`.
 
-Em produção, a rota `/api/analyze-meal` usa o AI Gateway da Vercel. A chave nunca é incluída no JavaScript enviado ao navegador.
+Em produção, a rota `/api/analyze-meal` prefere a OpenAI quando `OPENAI_API_KEY` está configurada; caso contrário usa o AI Gateway da Vercel. A chave nunca é incluída no JavaScript enviado ao navegador.
 
 ## Funcionalidades
 
@@ -29,7 +29,7 @@ Em produção, a rota `/api/analyze-meal` usa o AI Gateway da Vercel. A chave nu
 
 ## Como funciona a análise
 
-A fotografia é redimensionada no dispositivo e enviada à rota de servidor `/api/analyze-meal`. Essa rota pede ao AI Gateway uma estimativa estruturada no idioma e com o país de referência escolhidos no perfil. O resultado preenche os campos do formulário; a pessoa pode rever e alterar os valores antes de guardar. O assistente Nutri AI usa a rota `/api/nutri-assistant`; pode receber texto ou uma fotografia comprimida, além das preferências de alimentos seleccionadas.
+A fotografia é redimensionada no dispositivo e enviada à rota de servidor `/api/analyze-meal`. Essa rota pede ao fornecedor configurado uma estimativa estruturada no idioma e com o país de referência escolhidos no perfil. O resultado preenche os campos do formulário; a pessoa pode rever e alterar os valores antes de guardar. O assistente Nutri AI usa a rota `/api/nutri-assistant`; pode receber texto ou uma fotografia comprimida, além das preferências de alimentos seleccionadas.
 
 As quantidades e calorias estimadas a partir de uma imagem podem estar erradas, especialmente quando a porção ou os ingredientes não estão visíveis. Confirma os resultados. A fotografia é enviada ao serviço de IA para análise; os restantes registos continuam guardados localmente no navegador e não são sincronizados entre dispositivos.
 
@@ -38,3 +38,7 @@ Para testes locais, define `AI_GATEWAY_API_KEY` no servidor. Em produção na Ve
 ## Limitações
 
 Este MVP não cria contas online, não tem base de dados na nuvem nem integra pagamentos. O XP e as conquistas ficam guardados localmente e não sincronizam entre dispositivos. O painel administrativo não apresenta contagens de utilizadores ou compras até haver fontes de dados reais. O ditado por voz depende do suporte do navegador. A NutriAI é uma ferramenta de registo e informação geral e não substitui aconselhamento de um profissional de saúde.
+
+## Câmara e tema premium
+
+O painel e o formulário têm botões separados para tirar uma foto e escolher da galeria. No telemóvel, usa-se captura nativa; no computador, uma prévia com permissão de câmara e alternativa de galeria. As pistas de vídeo são encerradas ao fechar ou ocultar a página. O novo tema escuro é aplicado uma vez aos perfis existentes, sem apagar os registos; o seletor permite alternar depois. O service worker prefere a versão online e nunca guarda respostas de API.

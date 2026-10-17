@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0e5a43">
+  <meta name="theme-color" content="#090a0c">
   <meta name="description" content="Área de aplicação NutriAI: diário alimentar, gastronomia personalizada, menus e acompanhamento pessoal.">
   <title>NutriAI — A tua área</title>
   <link rel="manifest" href="manifest.webmanifest">
@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="app.css">
   <script src="app.js" defer></script>
 </head>
-<body>
+<body class="dark">
   <div class="app-frame">
     <aside class="sidebar" aria-label="Menu da aplicação">
       <a class="brand" href="../" aria-label="NutriAI, página inicial"><span class="brand-mark">N</span><span>Nutri<span>AI</span></span></a>
@@ -154,6 +154,20 @@
       <div class="modal-kicker"><span class="brand-mark small">N</span> Diário alimentar</div>
       <h2 id="meal-title">Registar refeição</h2>
       <p class="modal-intro">Tira uma fotografia para identificar a refeição e estimar calorias e macronutrientes. Também podes escrever o que comeste e pedir uma estimativa.</p>
+      <section class="photo-drop" aria-label="Fotografia da refeição">
+        <input id="meal-photo" type="file" accept="image/*" hidden>
+        <input id="meal-camera" type="file" accept="image/*" capture="environment" hidden>
+        <span class="photo-symbol" aria-hidden="true">◎</span>
+        <strong id="photo-label">Como queres registar a tua refeição?</strong>
+        <div class="photo-actions">
+          <button type="button" class="button" id="take-meal-photo">Tirar foto</button>
+          <button type="button" class="button secondary" id="choose-meal-photo">Escolher da galeria</button>
+        </div>
+        <small>A fotografia é enviada à IA para estimar os alimentos e as porções.</small>
+        <img id="photo-preview" alt="Pré-visualização da fotografia da refeição" hidden>
+      </section>
+      <div class="photo-analysis-status" id="meal-ai-status" role="status" aria-live="polite" hidden></div>
+      <section class="ai-result-panel" id="meal-ai-result" aria-live="polite" hidden></section>
       <div class="barcode-row">
         <label class="field">Produto embalado — código de barras
           <input id="barcode-input" inputmode="numeric" autocomplete="off" placeholder="Lê ou escreve o código">
@@ -161,15 +175,6 @@
         <button class="button secondary barcode-button" id="lookup-barcode" type="button">Consultar produto</button>
       </div>
       <p class="help-copy barcode-note">A consulta usa a base Open Food Facts. Confirma os valores com o rótulo: alguns produtos podem não ter informação completa.</p>
-      <label class="photo-drop" for="meal-photo">
-        <input id="meal-photo" type="file" accept="image/*" capture="environment">
-        <span class="photo-symbol">＋</span>
-        <strong id="photo-label">Tirar ou escolher uma fotografia</strong>
-        <small>A análise começa automaticamente depois de escolheres a imagem</small>
-        <img id="photo-preview" alt="Pré-visualização da fotografia da refeição" hidden>
-      </label>
-      <div class="photo-analysis-status" id="meal-ai-status" role="status" aria-live="polite" hidden></div>
-      <section class="ai-result-panel" id="meal-ai-result" aria-live="polite" hidden></section>
       <div class="form-grid">
         <label class="field span-2">O que comeste?
           <div class="input-with-button"><input name="title" id="meal-description" maxlength="100" required placeholder="Ex.: sopa de legumes e pão"><button class="dictate-button" id="dictate-meal" type="button" title="Ditado por voz">🎙</button></div>
@@ -204,6 +209,16 @@
       <input type="hidden" name="analysisNote">
       <button class="button primary wide" type="submit">Guardar refeição <span>→</span></button>
     </form>
+  </dialog>
+
+  <dialog class="modal camera-dialog" id="camera-dialog" aria-labelledby="camera-title">
+    <section class="modal-card">
+      <button type="button" class="modal-close" id="close-camera" aria-label="Fechar câmara">×</button>
+      <div class="eyebrow">NutriAI · fotografia</div><h2 id="camera-title">Enquadra a tua refeição</h2>
+      <p id="camera-status" role="status">A abrir a câmara…</p>
+      <video id="camera-video" autoplay muted playsinline></video>
+      <div class="photo-actions"><button type="button" class="button" id="capture-meal-photo" disabled>Tirar foto</button><button type="button" class="button secondary" id="camera-gallery">Escolher da galeria</button></div>
+    </section>
   </dialog>
 
   <button class="nutri-launcher" id="open-nutri" type="button" aria-haspopup="dialog" aria-controls="nutri-dialog" aria-label="Abrir assistente Nutri AI">

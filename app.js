@@ -40,7 +40,7 @@
   ];
 
   function loadState() {
-    var initial = { profile: null, meals: [], water: [], activities: [], weights: [], fast: null, fastHistory: [], shopping: [], xp: 0, xpAwards: [], dark: false };
+    var initial = { profile: null, meals: [], water: [], activities: [], weights: [], fast: null, fastHistory: [], shopping: [], xp: 0, xpAwards: [], dark: true, themeVersion: 2 };
     try {
       var saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
       if (!saved || typeof saved !== "object") return initial;
@@ -57,6 +57,7 @@
     if (!Array.isArray(initial.fastHistory)) initial.fastHistory = [];
     if (!Array.isArray(initial.shopping)) initial.shopping = [];
     if (!Array.isArray(initial.xpAwards)) initial.xpAwards = [];
+    if (saved && saved.themeVersion !== 2) { initial.dark = true; initial.themeVersion = 2; }
     initial.xp = number(initial.xp);
     return initial;
   }
@@ -367,6 +368,7 @@
     var suggestionText = goal ? "A meta de " + whole(goal) + " kcal foi introduzida no teu perfil. O diário soma os valores que registares; não calcula um plano alimentar." : "Define a tua meta diária no perfil, de acordo com as tuas necessidades e orientação profissional.";
 
     return "<div class='page-heading'><div><div class='eyebrow'>O teu espaço</div><h1>Olá, " + esc(name) + ".</h1><p>Um resumo do que registaste, sem complicar.</p></div><div class='heading-actions'>" + dateActions() + "<button class='button' type='button' data-action='add-meal'>＋ Registar refeição</button></div></div>" +
+      "<section class='capture-banner'><div><div class='eyebrow'>FOTOGRAFIA → ESTIMATIVA → DIÁRIO</div><h2>A tua próxima refeição começa aqui.</h2><p>Fotografa o prato ou escolhe uma imagem. Revê as porções e guarda no teu diário.</p></div><div class='photo-actions'><button type='button' class='button' data-action='take-photo'>◎ Tirar foto</button><button type='button' class='button secondary' data-action='choose-photo'>▧ Escolher da galeria</button></div></section>" +
       "<div class='dashboard-grid'><div class='stack'>" +
       "<section class='card hero-card'><div class='hero-card-head'><div><div class='eyebrow'>NutriAI · diário pessoal</div><h1>O teu dia, à tua maneira.</h1><p>Pequenos registos ajudam-te a ver o que já anotaste.</p></div><span class='date-badge'>" + esc(formatDate(viewDate, { weekday: "long", day: "numeric", month: "long" })) + "</span></div></section>" +
       renderGamification() +
@@ -672,12 +674,13 @@
     form.elements.photoData.value = "";
     pendingPhoto = "";
     document.getElementById("photo-preview").hidden = true;
-    document.getElementById("photo-label").textContent = "Tirar ou escolher uma fotografia";
+    document.getElementById("photo-label").textContent = "Como queres registar a tua refeição?";
     setMealAIStatus("", "");
     if (!mealDialog.open) mealDialog.showModal();
   }
 
   function closeDialog(dialog) {
+    if (dialog === mealDialog) mealAnalysisSequence += 1;
     if (dialog && dialog.open) dialog.close();
   }
 
@@ -972,8 +975,73 @@
     });
   }
 
+  var cameraStream = null;
+  var cameraSession = 0;
+  function stopMealCamera() {
+    cameraSession += 1;
+    if (cameraStream) cameraStream.getTracks().forEach(function (track) { track.stop(); });
+    cameraStream = null;
+    document.getElementById("camera-video").srcObject = null;
+    document.getElementById("capture-meal-photo").disabled = true;
+  }
+  function startMealCamera() {
+    // Native capture is the most reliable camera experience on phones.
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      document.getElementById("meal-camera").click();
+      return;
+    }
+    var dialog = document.getElementById("camera-dialog");
+    var video = document.getElementById("camera-video");
+    var status = document.getElementById("camera-status");
+    stopMealCamera();
+    var session = cameraSession;
+    dialog.showModal();
+    status.textContent = "Permite o acesso à câmara para fotografar o prato.";
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      status.textContent = "A câmara não está disponível neste navegador. Escolhe uma fotografia da galeria.";
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false }).then(function (stream) {
+      if (!dialog.open || session !== cameraSession) { stream.getTracks().forEach(function (track) { track.stop(); }); return; }
+      cameraStream = stream;
+      video.srcObject = stream;
+      video.onloadedmetadata = function () {
+        if (!dialog.open || session !== cameraSession) return;
+        document.getElementById("capture-meal-photo").disabled = false;
+        status.textContent = "Enquadra o prato com boa iluminação e tira a fotografia.";
+      };
+      video.play().catch(function () { status.textContent = "Não foi possível iniciar o vídeo. Escolhe uma fotografia da galeria."; stopMealCamera(); });
+    }).catch(function () {
+      if (session !== cameraSession) return;
+      status.textContent = "Não foi possível aceder à câmara. Verifica a permissão do navegador ou escolhe uma fotografia da galeria.";
+    });
+  }
+  document.getElementById("take-meal-photo").addEventListener("click", startMealCamera);
+  document.getElementById("choose-meal-photo").addEventListener("click", function () { document.getElementById("meal-photo").click(); });
+  document.getElementById("meal-camera").addEventListener("change", handlePhotoChange);
+  document.getElementById("camera-dialog").addEventListener("close", stopMealCamera);
+  document.getElementById("close-camera").addEventListener("click", function () { stopMealCamera(); closeDialog(document.getElementById("camera-dialog")); });
+  document.getElementById("camera-gallery").addEventListener("click", function () { stopMealCamera(); closeDialog(document.getElementById("camera-dialog")); document.getElementById("meal-photo").click(); });
+  document.getElementById("capture-meal-photo").addEventListener("click", function () {
+    var video = document.getElementById("camera-video");
+    if (!video.videoWidth || !video.videoHeight) return;
+    var canvas = document.createElement("canvas");
+    var ratio = Math.min(1, 1200 / Math.max(video.videoWidth, video.videoHeight));
+    canvas.width = Math.round(video.videoWidth * ratio); canvas.height = Math.round(video.videoHeight * ratio);
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(function (blob) {
+      stopMealCamera(); closeDialog(document.getElementById("camera-dialog"));
+      if (blob) handlePhotoChange({ target: { files: [blob], value: "" } });
+    }, "image/jpeg", 0.85);
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { stopMealCamera(); closeDialog(document.getElementById("camera-dialog")); }
+  });
+  window.addEventListener("pagehide", stopMealCamera);
+
   function handlePhotoChange(event) {
     var file = event.target.files && event.target.files[0];
+    event.target.value = "";
     if (!file) return;
     if (!file.type || file.type.indexOf("image/") !== 0) {
       showToast("Escolhe um ficheiro de imagem.");
@@ -992,6 +1060,10 @@
       event.target.value = "";
       return;
     }
+    pendingPhoto = "";
+    document.getElementById("meal-form").elements.photoData.value = "";
+    document.getElementById("estimate-meal-ai").disabled = true;
+    document.getElementById("photo-preview").hidden = true;
     document.getElementById("photo-label").textContent = "A preparar fotografia…";
     setMealAIStatus("A preparar a fotografia para análise…", "loading");
     compressImage(file).then(function (dataUrl) {
@@ -1225,6 +1297,12 @@
     var action = actionEl.getAttribute("data-action");
     var id = actionEl.getAttribute("data-id");
     if (action === "add-meal") return openMealDialog();
+    if (action === "take-photo" || action === "choose-photo") {
+      openMealDialog();
+      if (action === "take-photo") startMealCamera();
+      else document.getElementById("meal-photo").click();
+      return;
+    }
     if (action === "prev-day" || action === "next-day") {
       var date = parseDate(viewDate);
       date.setDate(date.getDate() + (action === "prev-day" ? -1 : 1));

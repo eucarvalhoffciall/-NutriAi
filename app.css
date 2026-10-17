@@ -379,3 +379,57 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 @media(max-width:820px){.nutri-launcher{right:13px;bottom:calc(env(safe-area-inset-bottom) + 78px)}.nutri-dialog{inset:auto 12px calc(env(safe-area-inset-bottom) + 76px);width:auto;height:min(76dvh,650px);max-height:calc(100dvh - env(safe-area-inset-bottom) - 90px)}}
 @media(max-width:620px){.food-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.food-picker{padding:12px 10px}.gastronomy-banner{align-items:flex-start;padding:16px;gap:9px}.gastronomy-banner h2{font-size:19px}.gastronomy-count{padding:8px 9px}.gastronomy-count strong{font-size:16px}.menu-day-grid{grid-template-columns:1fr;gap:6px}.menu-slot{display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center;gap:0 8px;padding:9px}.menu-slot>small{grid-row:span 2}.menu-slot strong{margin:0}.recipe-nutrition{gap:3px}.recipe-nutrition strong{font-size:8px}.nutri-launcher{padding:8px}.nutri-launcher-copy{display:none}.nutri-launcher-icon{width:40px;height:40px}.nutri-dialog{inset:auto 8px calc(env(safe-area-inset-bottom) + 75px);height:min(76dvh,620px);max-height:calc(100dvh - env(safe-area-inset-bottom) - 87px);border-radius:21px}.nutri-panel{border-radius:21px}}
 @media(max-width:620px){.recipe-grid{grid-template-columns:1fr}.recipe-card{min-height:0;padding:14px}.recipe-nutrition strong{font-size:11px}}
+
+/* Premium graphite theme, with warm gold accents and readable secondary text. */
+.dark{--bg:#090a0c;--surface:#141619;--surface-2:#1c1e22;--ink:#f4f1e9;--muted:#a9a9ad;--line:#303136;--green:#e1bf7d;--green-2:#cda763;--mint:#30291d;--mint-2:#23211d;--lime:#e8c98a;--shadow:0 20px 55px #0006;background:radial-gradient(ellipse at 85% 0,#30271844,transparent 45%),var(--bg)}
+.dark .sidebar{background:#0e1012;border-right:1px solid var(--line)}
+.dark .brand-mark,.dark .xp-orb,.dark .nutri-avatar,.dark .nutri-launcher-icon{background:linear-gradient(135deg,#f1dba9,#c49a56);color:#211b10;box-shadow:0 5px 22px #c49a561a}
+.dark .side-label,.dark .side-foot span,.dark .nav-item,.dark .nav-item span{color:#a9aaae}
+.dark .nav-item.active,.dark .nav-item.active span,.dark .brand>span:last-child span{color:var(--lime)}
+.dark .card{box-shadow:0 8px 30px #0002}
+.dark .hero-card,.dark .game-card,.dark .gastronomy-banner{background:radial-gradient(ellipse at top right,#b78d3930,transparent 60%),linear-gradient(135deg,#202024,#151619);border:1px solid #51422d}
+.dark .hero-card p,.dark .game-card p,.dark .game-card h2 span,.dark .nutri-header p,.dark .nutri-launcher-copy small{color:#c0bab0}
+.dark .hero-card .eyebrow,.dark .game-card .eyebrow,.dark .eyebrow,.dark .modal-kicker,.dark .text-link,.dark .ai-result-kicker,.dark .smart-eyebrow,.dark .quest-xp,.dark .section-mark{color:var(--lime)}
+.dark .button,.dark .nutri-send{background:linear-gradient(120deg,#ead09b,#c7a063);color:#201a10;border:1px solid #e8c98a55;box-shadow:0 4px 14px #0002}
+.dark .button:hover{background:#efd8aa}
+.dark .button.secondary{background:#202226;color:var(--ink);border:1px solid #414247;box-shadow:none}
+.dark .button.secondary:hover{background:#2a2c30;border-color:#9c8358}
+.dark .field,.dark .topbar-title,.dark .ingredient-list span,.dark .food-chip-list span,.dark .suggestion p,.dark .smart-note,.dark .ai-food-list li strong{color:#c0bec1}
+.dark .field input,.dark .field select{background:#101215;border-color:#3a3b40}
+.dark input::placeholder{color:#929297}
+.dark .privacy-note,.dark .privacy-callout,.dark .suggestion,.dark .local-pill,.dark .recipe-filter-note{background:#1c201e;border-color:#323d37;color:#b6c8bc}
+.dark .privacy-note strong{color:#d3e3d7}
+.dark .photo-drop{background:linear-gradient(140deg,#26231d,#17181c);border:1px dashed #8a7149;color:var(--ink);padding:22px;gap:12px;cursor:default}
+.dark .photo-symbol,.dark .quest-icon,.dark .streak-icon,.dark .meal-icon,.dark .tag,.dark .confidence-chip,.dark .recipe-match,.dark .recipe-meta span{background:#30291e;color:#e6c58b}
+.dark .photo-analysis-status{background:#202329;border-color:#44464e;color:#e0e1e5}
+.dark .photo-analysis-status.is-success{background:#182d24;border-color:#365944;color:#c4e7d0}
+.dark .photo-analysis-status.is-error{background:#35221f;border-color:#75483d;color:#ffd2c2}
+.dark .progress-track,.dark .quest-track{background:#303136}
+.dark .calorie-ring{background:conic-gradient(var(--green-2) var(--progress),#303136 0)}
+.dark .xp-track>span,.dark .quest-track>span{background:linear-gradient(90deg,#b38c4d,#f1d9a1);box-shadow:none}
+.dark .xp-bar-label{color:#c6c0b6}.dark .xp-bar-label strong{color:#f1d9a1}
+.dark .nutrition-tile.gold,.dark .quest-card.is-complete,.dark .achievement.unlocked{border-color:#59472e;background:#262219}
+.dark .recipe-visual{background:linear-gradient(135deg,#25292a,#3c3222)}
+.dark .food-choice:has(input:checked){background:#30291e;border-color:#a88b57;color:#f0d59e}
+.dark .nutri-header,.dark .nutri-launcher{background:linear-gradient(130deg,#2b2720,#151619);border-color:#665132}
+.dark .nutri-bubble.is-user{background:#2f281e;border-color:#625036;color:#f3dfb8}
+.dark .mobile-nav button.active{color:var(--lime)}
+.dark .empty-state{border-color:#49433a}
+.dark .live-dot{box-shadow:0 0 0 4px #1b3025}
+.dark .toast{background:#29251d;border:1px solid #665132;color:#f4e5c6}
+.dark button:focus-visible,.dark a:focus-visible,.dark input:focus-visible,.dark select:focus-visible{outline:3px solid #e8c98a;outline-offset:3px}
+.capture-banner{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:25px;border:1px solid var(--line);border-radius:22px;background:var(--surface);margin-bottom:22px}
+.capture-banner h2{font-size:clamp(20px,2.3vw,28px);letter-spacing:-.8px;line-height:1.2;margin:7px 0}
+.capture-banner p{max-width:530px;color:var(--muted);margin:8px 0 0;font-size:13px}
+.dark .capture-banner{background:radial-gradient(ellipse at 0 0,#b38c4d20,transparent 65%),#141619;border-color:#665132;box-shadow:0 15px 45px #0003}
+.photo-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.photo-actions .button{min-height:48px;padding:12px 19px;font-size:13px;white-space:nowrap}
+.capture-banner .photo-actions{flex-shrink:0}
+.photo-drop input[hidden],.photo-drop img[hidden]{display:none}
+.photo-drop strong{font-size:15px}.photo-drop small{font-size:11px;line-height:1.6}
+.camera-dialog video{display:block;width:100%;max-height:55dvh;object-fit:contain;background:#050505;border-radius:16px;margin:16px 0}
+.camera-dialog p{color:var(--muted);font-size:13px}
+button:disabled{opacity:.55;cursor:wait}
+@media(max-width:1100px){.capture-banner{align-items:flex-start;flex-direction:column}.capture-banner .photo-actions{width:100%;justify-content:flex-start}}
+@media(max-width:620px){.capture-banner{padding:20px}.capture-banner .photo-actions{display:grid;grid-template-columns:1fr;width:100%}.photo-drop{padding:16px!important}.photo-drop .photo-actions{width:100%;display:grid;grid-template-columns:1fr}.photo-actions .button{min-height:50px}.modal-card{padding:22px 18px}.capture-banner h2{max-width:290px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}

@@ -40,7 +40,7 @@
   ];
 
   function loadState() {
-    var initial = { profile: null, meals: [], water: [], activities: [], weights: [], fast: null, fastHistory: [], shopping: [], xp: 0, xpAwards: [], dark: true, themeVersion: 2 };
+    var initial = { profile: null, meals: [], water: [], activities: [], weights: [], fast: null, fastHistory: [], shopping: [], xp: 0, xpAwards: [], dark: false, themeVersion: 3 };
     try {
       var saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
       if (!saved || typeof saved !== "object") return initial;
@@ -57,7 +57,7 @@
     if (!Array.isArray(initial.fastHistory)) initial.fastHistory = [];
     if (!Array.isArray(initial.shopping)) initial.shopping = [];
     if (!Array.isArray(initial.xpAwards)) initial.xpAwards = [];
-    if (saved && saved.themeVersion !== 2) { initial.dark = true; initial.themeVersion = 2; }
+    if (saved && saved.themeVersion !== 3) { initial.dark = false; initial.themeVersion = 3; }
     initial.xp = number(initial.xp);
     return initial;
   }

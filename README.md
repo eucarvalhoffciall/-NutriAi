@@ -42,3 +42,5 @@ Este MVP não cria contas online, não tem base de dados na nuvem nem integra pa
 ## Câmara e tema premium
 
 O painel e o formulário têm botões separados para tirar uma foto e escolher da galeria. No telemóvel, usa-se captura nativa; no computador, uma prévia com permissão de câmara e alternativa de galeria. As pistas de vídeo são encerradas ao fechar ou ocultar a página. O novo tema escuro é aplicado uma vez aos perfis existentes, sem apagar os registos; o seletor permite alternar depois. O service worker prefere a versão online e nunca guarda respostas de API.
+
+A análise de refeições também aceita `OPENAI` como nome alternativo de variável de servidor, para compatibilidade com configurações anteriores. `OPENAI_API_KEY` tem prioridade; espaços nas extremidades são removidos. Nenhum valor é devolvido ao cliente ou escrito nos logs. Alterações às variáveis na Vercel exigem uma nova publicação.

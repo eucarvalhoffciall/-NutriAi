@@ -30,3 +30,22 @@ test('provider quota and malformed result do not produce fabricated nutrients', 
  result=await call({description:'Sopa'});assert.equal(result.status,503);assert.equal(result.body.calories,undefined);
  }finally{global.fetch=originalFetch;if(originalKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=originalKey;}
 });
+
+test('accepts the existing OPENAI variable and prefers the canonical key', async()=>{
+ const originalFetch=global.fetch,originalKey=process.env.OPENAI_API_KEY,originalAlias=process.env.OPENAI;
+ delete process.env.OPENAI_API_KEY;process.env.OPENAI='  alias-test-only  ';
+ let authorization;
+ global.fetch=async(url,options)=>{authorization=options.headers.Authorization;return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(sample)}}]})};};
+ try {
+  let result=await call({image:'data:image/jpeg;base64,/9j/2Q=='});
+  assert.equal(result.status,200);assert.equal(authorization,'Bearer alias-test-only');
+  process.env.OPENAI_API_KEY=' canonical-test-only ';
+  result=await call({description:'Sopa'});
+  assert.equal(result.status,200);assert.equal(authorization,'Bearer canonical-test-only');
+  assert.equal(JSON.stringify(result).includes('test-only'),false);
+ }finally{
+  global.fetch=originalFetch;
+  if(originalKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=originalKey;
+  if(originalAlias===undefined)delete process.env.OPENAI;else process.env.OPENAI=originalAlias;
+ }
+});

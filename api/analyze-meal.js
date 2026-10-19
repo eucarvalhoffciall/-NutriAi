@@ -93,7 +93,7 @@ function publicError(error) {
   const message = details.message;
   if (openAIKey()) {
     if (details.statusCode === 401 || details.statusCode === 403) return "A chave OpenAI não foi aceite. Confirma a configuração no servidor e volta a publicar a aplicação.";
-    if (details.code === "insufficient_quota" || details.statusCode === 402) return "A conta OpenAI está sem saldo ou atingiu o orçamento. Verifica a faturação da API.";
+    if (["insufficient_quota", "credit_balance_exhausted", "organization_spend_limit_exceeded", "project_spend_limit_exceeded"].includes(details.code) || details.statusCode === 402) return "A conta OpenAI está sem saldo ou atingiu o orçamento. Verifica a faturação da API.";
     if (details.statusCode === 429) return "O limite temporário da OpenAI foi atingido. Aguarda um momento e tenta novamente.";
     if (details.name === "TimeoutError") return "A análise demorou demasiado. Tenta novamente com uma fotografia mais nítida.";
     return "Não foi possível analisar a refeição agora. Tenta novamente ou preenche os valores manualmente.";
@@ -246,6 +246,7 @@ module.exports = async function analyzeMeal(req, res) {
       code: details.code || null,
       causeName: details.causeName || null
     }));
-    return sendJson(res, 503, { error: publicError(error) });
+    const knownCodes = ["insufficient_quota", "credit_balance_exhausted", "organization_spend_limit_exceeded", "project_spend_limit_exceeded", "rate_limit_exceeded", "slow_down", "invalid_api_key", "model_not_found"];
+    return sendJson(res, 503, { error: publicError(error), code: knownCodes.includes(details.code) ? details.code : "analysis_unavailable" });
   }
 };

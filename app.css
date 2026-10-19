@@ -433,3 +433,10 @@ button:disabled{opacity:.55;cursor:wait}
 @media(max-width:1100px){.capture-banner{align-items:flex-start;flex-direction:column}.capture-banner .photo-actions{width:100%;justify-content:flex-start}}
 @media(max-width:620px){.capture-banner{padding:20px}.capture-banner .photo-actions{display:grid;grid-template-columns:1fr;width:100%}.photo-drop{padding:16px!important}.photo-drop .photo-actions{width:100%;display:grid;grid-template-columns:1fr}.photo-actions .button{min-height:50px}.modal-card{padding:22px 18px}.capture-banner h2{max-width:290px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Real recipe photography, with a reserved frame to prevent layout shifts. */
+.recipe-card .recipe-photo{position:relative;display:block;height:auto;aspect-ratio:3/2;margin:0 0 16px;overflow:hidden;border-radius:14px;background:var(--surface)}
+.recipe-photo-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:40px;background:linear-gradient(135deg,rgba(109,190,149,.12),rgba(109,190,149,.03))}
+.recipe-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.recipe-photo img[hidden]{display:none}
+.recipe-photo figcaption{position:absolute;bottom:9px;left:9px;right:9px;width:max-content;max-width:calc(100% - 18px);padding:5px 8px;border-radius:7px;background:rgba(8,15,13,.8);color:#fff;font-size:10px;font-weight:500;line-height:1.4;letter-spacing:.02em}
